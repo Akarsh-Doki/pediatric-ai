@@ -15,13 +15,14 @@ settings = get_settings()
 
 engine = create_engine(
     settings.database_url,
-    pool_size = 10,
-    max_overflow = 20,
-    pool_pre_ping = True
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     """FastAPI dependency for database sessions."""
@@ -31,8 +32,10 @@ def get_db():
     finally:
         db.close()
 
+
 def utcnow():
     return datetime.now(timezone.utc)
+
 
 class Patient(Base):
     __tablename__ = "patients"
@@ -46,8 +49,9 @@ class Patient(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow)
     conversations = relationship("Conversation", back_populates="patient")
 
-class GuidlineDoc(Base):
-    __tablename__ = "guidline_docs"
+
+class GuidelineDoc(Base):
+    __tablename__ = "guideline_docs"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(500), nullable=False)
     source = Column(String(255), nullable=False)
@@ -56,6 +60,7 @@ class GuidlineDoc(Base):
     file_path = Column(String(1000), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
     chunks = relationship("Chunk", back_populates="document")
+
 
 class Chunk(Base):
     __tablename__ = "chunks"
@@ -70,6 +75,7 @@ class Chunk(Base):
     chunk_index = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
     document = relationship("GuidelineDoc", back_populates="chunks")
+
 
 class Conversation(Base):
     __tablename__ = "conversations"
