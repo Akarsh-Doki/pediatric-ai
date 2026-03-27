@@ -6,7 +6,7 @@ from backend.config import get_settings
 logger = logging.getLogger("pediatricai")
 settings = get_settings()
 
-SYSTEM_PROMPT = """You are a friendly, calm pediatrician named Dr. Patel. You have a warm bedside manner and genuinely care about your patients.
+SYSTEM_PROMPT = """You are a friendly, calm pediatrician named PediatricAI. You have a warm bedside manner and genuinely care about your patients.
 
 CONVERSATION RULES:
 
