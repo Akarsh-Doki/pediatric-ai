@@ -68,14 +68,28 @@ async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
     age_range = "pediatric" if patient.age < 18 else None
     chunks = search_chunks(db, request.message, age_range=age_range)
 
+    from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
+
     refused = should_refuse(chunks)
     confidence = compute_confidence(chunks)
+    low_confidence = is_low_confidence(chunks)
 
     if refused:
-        answer = REFUSAL_MESSAGE
+        # Still try to help with general knowledge instead of hard refusing
+        history_msgs = db.query(Message).filter(
+            Message.conversation_id == conversation.id
+        ).order_by(Message.created_at).all()
+        history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
+
+        messages = build_prompt(request.message, [], patient_info, history)
+        result = await generate_response(messages)
+
+        answer = result["answer"]
+        tokens_used = result["tokens_used"]
+        urgency = assess_urgency(answer, chunks)
         citations = []
-        urgency = "none"
-        tokens_used = 0
+        refused = False
+        confidence = 0.3  # Low confidence since no corpus match
     else:
         history_msgs = db.query(Message).filter(
             Message.conversation_id == conversation.id

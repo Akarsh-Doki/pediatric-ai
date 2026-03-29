@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # RAG
     retrieval_top_k: int = 10
-    similarity_threshold: float = 0.65
+    similarity_threshold: float = 0.55
     min_chunks_for_answer: int = 2
     chunk_size: int = 600
     chunk_overlap: int = 100

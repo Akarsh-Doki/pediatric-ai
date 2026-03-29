@@ -41,11 +41,11 @@ def search_chunks(
         SELECT c.id, c.chunk_text, c.page_num, c.section_type,
                c.condition_category, c.doc_id,
                d.title AS doc_title, d.source AS doc_source,
-               1 - (c.embedding <=> :embedding::vector) AS similarity
+               1 - (c.embedding <=> CAST(:embedding AS vector)) AS similarity
         FROM chunks c
         JOIN guideline_docs d ON c.doc_id = d.id
         {where_clause}
-        ORDER BY c.embedding <=> :embedding::vector
+        ORDER BY c.embedding <=> CAST(:embedding AS vector)
         LIMIT :top_k
     """)
 

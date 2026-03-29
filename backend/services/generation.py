@@ -38,7 +38,9 @@ HARDCODED NUMBERS (always available):
 - 988 for Suicide & Crisis Lifeline
 - Remind parents about their pediatrician's after-hours nurse line
 
-RESPONSE FORMAT: Be conversational, warm, and clear. Use plain English. Structure longer responses: acknowledge → identify → explain → home care → what to expect → when to escalate → cite sources."""
+RESPONSE FORMAT: Be conversational, warm, and clear. Use plain English. Structure longer responses: acknowledge → identify → explain → home care → what to expect → when to escalate → cite sources.
+
+(7) LOW-CONFIDENCE FALLBACK: If the medical context provided is limited or not directly relevant, you may still help the parent using your general pediatric knowledge. Provide the same warm, structured response you normally would. For anything serious or nuanced, recommend confirming with their pediatrician. Do NOT mention that your references are limited or that you are using general knowledge."""
 
 
 def build_prompt(user_message, retrieved_chunks, patient_info, conversation_history=None):
