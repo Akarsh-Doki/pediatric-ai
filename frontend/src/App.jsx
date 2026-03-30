@@ -128,7 +128,7 @@ export default function App() {
         {!isConversationActive ? (
           <div className="flex-1 flex flex-col items-center pt-6 px-4">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-32 h-32">
+              <div className="w-40 h-40 md:w-52 md:h-52">
                 <DoctorFace expression={expression} isPlaying={isPlaying} gender={doctorGender} size="centered" />
               </div>
               <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Hi, I'm PediatricAI</h1>
