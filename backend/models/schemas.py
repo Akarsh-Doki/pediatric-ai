@@ -3,22 +3,22 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-class PatientCreate(BaseModel):
+class PatientCreate(BaseModel): # The schema for making a new patient (POST /patients)
     name: str = Field(..., min_length=1, max_length=255)
-    age: int = Field(..., ge=0, le=120)
+    age: int = Field(..., ge=0, le=120) # ... means that this field is required
     sex: str = Field(..., pattern="^(male|female)$")
     weight_kg: Optional[float] = Field(None, ge=0, le=300)
     known_conditions: list[str] = []
     medications: list[dict] = []
 
-class PatientUpdate(BaseModel):
+class PatientUpdate(BaseModel): # Schema for updating a patient (PATCH /patients/{id}). Every field is optional in case you want to update only one field
     name: Optional[str] = None
     age: Optional[int] = Field(None, ge=0, le=120)
     weight_kg: Optional[float] = Field(None, ge=0, le=300)
     known_conditions: Optional[list[str]] = None
     medications: Optional[list[dict]] = None
 
-class PatientResponse(BaseModel):
+class PatientResponse(BaseModel): # The schema for what comes back from the API. from_attributes = True tells Pydantic: "you can create this schema from a SQLAlchemy object, not just a dictionary." 
     id: UUID
     name: str
     age: int
@@ -31,25 +31,25 @@ class PatientResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class DocumentUploadResponse(BaseModel):
+class DocumentUploadResponse(BaseModel): # Returned after uploading a PDF, and tells the frontend "here's the document ID, and its status is uploaded"
     document_id: UUID
     title: str
     status: str = "uploaded"
 
 
-class IngestResponse(BaseModel):
+class IngestResponse(BaseModel): # returned after ingestion, and tells you how many chunks were generated from the document
     message: str
     document_id: UUID
     chunks_created: int = 0
 
-class ChatRequest(BaseModel):
+class ChatRequest(BaseModel): # This is what the frontend sends when a user asks a question
     patient_id: UUID
     message: str = Field(..., min_length=1, max_length=5000)
     conversation_id: Optional[UUID] = None
     doctor_gender: str = Field(default="female", pattern="^(male|female)$")
     voice_enabled: bool = True
 
-class CitationItem(BaseModel):
+class CitationItem(BaseModel): # One citation, shown in the UI under each response 
     doc_title: str
     source: str
     page_num: Optional[int]
@@ -57,7 +57,7 @@ class CitationItem(BaseModel):
     excerpt: str
     similarity_score: float
 
-class ChatResponse(BaseModel):
+class ChatResponse(BaseModel): # This is everything that comes back from a chat query
     answer: str
     audio_base64: Optional[str] = None
     citations: list[CitationItem] = []
@@ -68,16 +68,16 @@ class ChatResponse(BaseModel):
     conversation_id: UUID
     urgency: str = "none"
 
-class TTSRequest(BaseModel):
+class TTSRequest(BaseModel): # Input for text-to-speech synthesis
     text: str = Field(..., min_length=1, max_length=10000)
     doctor_gender: str = Field(default="female", pattern="^(male|female)$")
 
-class TTSResponse(BaseModel):
+class TTSResponse(BaseModel): # Returns the audio as a base64-encoded string
     audio_base64: str
     duration_ms: int = 0
     voice_used: str
 
-class AnalyticsDashboard(BaseModel):
+class AnalyticsDashboard(BaseModel): # Powers the admin dashboard. Shows system health metrics.
     total_queries: int
     avg_latency_ms: float
     refusal_rate: float
@@ -96,13 +96,13 @@ class MessageResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class ConversationSummary(BaseModel):
+class ConversationSummary(BaseModel): # Used in the sidebar to show past conversations
     id: UUID
     started_at: datetime
     message_count: int
     last_message_preview: str
 
-class ConversationHistory(BaseModel):
+class ConversationHistory(BaseModel): # The full conversation history with all message
     conversation_id: UUID
     patient_name: str
     messages: list[MessageResponse]
