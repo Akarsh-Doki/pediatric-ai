@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { api } from '../api/client';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export function useChat() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,28 +16,114 @@ export function useChat() {
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
+    setMessages(prev => [...prev, {
+      role: 'assistant', content: '', streaming: true, timestamp: new Date(),
+    }]);
+
     try {
-      const response = await api.sendMessage({
-        patient_id: patientId, message: text,
-        conversation_id: conversationId,
-        doctor_gender: doctorGender, voice_enabled: voiceEnabled,
+      const response = await fetch(API_BASE + '/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: patientId,
+          message: text,
+          conversation_id: conversationId,
+          doctor_gender: doctorGender,
+          voice_enabled: voiceEnabled,
+        }),
       });
 
-      setConversationId(response.conversation_id);
-      setLastResponse(response);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullAnswer = '';
+      let buffer = '';
 
-      setMessages(prev => [...prev, {
-        role: 'assistant', content: response.answer,
-        citations: response.citations, confidence: response.confidence_score,
-        refused: response.refused, urgency: response.urgency, timestamp: new Date(),
-      }]);
-      return response;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('event: token')) continue;
+
+          if (line.startsWith('data: ') && !line.includes('"conversation_id"')) {
+            const token = line.slice(6);
+            if (token && token !== '[DONE]') {
+              fullAnswer += token;
+              setMessages(prev => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last && last.role === 'assistant') {
+                  updated[updated.length - 1] = { ...last, content: fullAnswer };
+                }
+                return updated;
+              });
+            }
+          }
+
+          if (line.startsWith('data: ') && line.includes('"conversation_id"')) {
+            try {
+              const meta = JSON.parse(line.slice(6));
+              setConversationId(meta.conversation_id);
+              setLastResponse({
+                answer: fullAnswer,
+                confidence_score: meta.confidence_score,
+                refused: meta.refused,
+                urgency: meta.urgency,
+                citations: meta.citations || [],
+              });
+
+              setMessages(prev => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last && last.role === 'assistant') {
+                  updated[updated.length - 1] = {
+                    ...last,
+                    content: fullAnswer,
+                    streaming: false,
+                    citations: meta.citations,
+                    confidence: meta.confidence_score,
+                    refused: meta.refused,
+                    urgency: meta.urgency,
+                  };
+                }
+                return updated;
+              });
+
+              if (voiceEnabled && fullAnswer) {
+                try {
+                  const ttsResult = await api.synthesize({ text: fullAnswer, gender: doctorGender });
+                  if (ttsResult.audio_base64) {
+                    setLastResponse(prev => ({ ...prev, audio_base64: ttsResult.audio_base64 }));
+                  }
+                } catch (e) {
+                  console.warn('TTS failed:', e);
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to parse stream metadata:', e);
+            }
+          }
+        }
+      }
     } catch (error) {
-      setMessages(prev => [...prev, {
-        role: 'assistant', content: "I'm sorry, I'm having trouble right now. Please try again.",
-        error: true, timestamp: new Date(),
-      }]);
-      throw error;
+      console.error('Stream error:', error);
+      setMessages(prev => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last && last.role === 'assistant') {
+          updated[updated.length - 1] = {
+            ...last,
+            content: "I'm sorry, I'm having trouble right now. Please try again.",
+            streaming: false,
+            error: true,
+          };
+        }
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -52,10 +140,16 @@ export function useChat() {
       const data = await api.getHistory(convId);
       setConversationId(convId);
       setMessages(data.messages.map(m => ({
-        role: m.role, content: m.content, citations: m.citations,
-        confidence: m.confidence_score, refused: m.refused, timestamp: new Date(m.created_at),
+        role: m.role,
+        content: m.content,
+        citations: m.citations,
+        confidence: m.confidence_score,
+        refused: m.refused,
+        timestamp: new Date(m.created_at),
       })));
-    } catch (e) { console.error('Failed to load conversation:', e); }
+    } catch (e) {
+      console.error('Failed to load conversation:', e);
+    }
   }, []);
 
   return { messages, isLoading, conversationId, lastResponse, sendMessage, resetChat, loadConversation };

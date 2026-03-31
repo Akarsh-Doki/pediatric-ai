@@ -15,16 +15,16 @@ import concernedSerious from '../assets/doctor/concerned_serious.png';
 import concernedWorried from '../assets/doctor/concerned_worried.png';
 
 /*
-  EXPRESSION STATE MACHINE (11 PNGs → 5 states):
+  EXPRESSION STATE MACHINE (11 PNGs - 5 states):
 
-  IDLE:       idle ↔ idle_warm (swap every 8-12s), blink every 2.8-5.5s
+  IDLE:       idle <-> idle_warm (swap every 8-12s), blink every 2.8-5.5s
   THINKING:   thinking (static, eyes aside)
-  TALKING:    cycle A → B → C → B → D → B at 190ms per frame
+  TALKING:    cycle A -> B -> C -> B -> D -> B at 190ms per frame
   REASSURING: talk_d (reused as warm smile), blinks still active
-  CONCERNED:  cycle concerned_mild → serious → worried (3s each)
+  CONCERNED:  cycle concerned_mild -> serious -> worried (3s each)
 */
 
-const TALK_FRAMES = [talkA, talkB, talkC, talkB, talkD, talkB];
+const TALK_FRAMES = [talkA, talkB, talkD, talkB, talkD, talkB, idle];
 const TALK_INTERVAL_MS = 190;
 const BLINK_MIN_MS = 2800;
 const BLINK_MAX_MS = 5500;
@@ -77,10 +77,7 @@ export default function DoctorFace({ expression = 'idle', isPlaying = false, siz
     if (expression === 'idle') {
       setCurrentFrame(idle);
       scheduleBlink();
-      const warmInterval = setInterval(() => {
-        setCurrentFrame(prev => prev === idle ? idleWarm : idle);
-      }, 8000 + Math.random() * 4000);
-      return () => { clearInterval(warmInterval); stopBlink(); };
+      return () => { stopBlink(); };
     }
 
     if (expression === 'thinking') {
@@ -88,7 +85,8 @@ export default function DoctorFace({ expression = 'idle', isPlaying = false, siz
       return;
     }
 
-    if (expression === 'talking' && isPlaying) {
+    // TALKING: animate mouth whether streaming text OR playing audio
+    if (expression === 'talking') {
       talkIndexRef.current = 0;
       setCurrentFrame(TALK_FRAMES[0]);
       talkIntervalRef.current = setInterval(() => {
@@ -96,11 +94,6 @@ export default function DoctorFace({ expression = 'idle', isPlaying = false, siz
         setCurrentFrame(TALK_FRAMES[talkIndexRef.current]);
       }, TALK_INTERVAL_MS);
       return () => clearInterval(talkIntervalRef.current);
-    }
-
-    if (expression === 'talking' && !isPlaying) {
-      setCurrentFrame(idle);
-      return;
     }
 
     if (expression === 'reassuring') {
@@ -120,13 +113,12 @@ export default function DoctorFace({ expression = 'idle', isPlaying = false, siz
     }
 
     setCurrentFrame(idle);
-  }, [expression, isPlaying, scheduleBlink, stopBlink]);
+  }, [expression, scheduleBlink, stopBlink]);
 
-  const sizeClass = size === 'centered' ? 'df-size-centered' : 'df-size-sidebar';
   const displayFrame = isBlinking ? blink : currentFrame;
 
   return (
-    <div className={`df-container ${sizeClass}`}>
+    <div className="df-container">
       <img
         src={displayFrame}
         alt="PediatricAI"

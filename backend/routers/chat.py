@@ -12,13 +12,13 @@ from backend.models.schemas import ChatRequest, ChatResponse, CitationItem
 from backend.services.retrieval import search_chunks
 from backend.services.generation import build_prompt, generate_response, generate_response_stream, assess_urgency
 from backend.services.tts_service import synthesize_speech
-from backend.services.evaluation import should_refuse, compute_confidence
+from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
 from backend.utils.symptoms import extract_symptoms
 
 logger = logging.getLogger("pediatricai")
 router = APIRouter(prefix="/chat", tags=["chat"])
 
-REFUSAL_MESSAGE = "I don't have enough information in my medical references to assess this safely. I'd recommend reaching out to your pediatrician — they'll be able to help. If it's after hours, most pediatrician offices have a nurse line you can call."
+REFUSAL_MESSAGE = "I don't have enough information in my medical references to assess this safely. I'd recommend reaching out to your pediatrician \u2014 they'll be able to help. If it's after hours, most pediatrician offices have a nurse line you can call."
 
 
 @router.post("/query", response_model=ChatResponse)
@@ -68,11 +68,8 @@ async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
     age_range = "pediatric" if patient.age < 18 else None
     chunks = search_chunks(db, request.message, age_range=age_range)
 
-    from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
-
     refused = should_refuse(chunks)
     confidence = compute_confidence(chunks)
-    low_confidence = is_low_confidence(chunks)
 
     if refused:
         # Still try to help with general knowledge instead of hard refusing
@@ -89,7 +86,7 @@ async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
         urgency = assess_urgency(answer, chunks)
         citations = []
         refused = False
-        confidence = 0.3  # Low confidence since no corpus match
+        confidence = 0.3
     else:
         history_msgs = db.query(Message).filter(
             Message.conversation_id == conversation.id
@@ -152,7 +149,7 @@ async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
 
 @router.post("/stream")
 async def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
-    """SSE streaming endpoint — sends tokens as they generate."""
+    """SSE streaming endpoint - sends tokens as they generate."""
     patient = db.query(Patient).filter(Patient.id == request.patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -178,24 +175,48 @@ async def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
     db.add(user_msg)
     db.commit()
 
+    # Capture IDs as plain values BEFORE the async generator
+    # (SQLAlchemy objects get detached from the session after commit)
+    conv_id = conversation.id
+    patient_id_val = patient.id
+
     age_range = "pediatric" if patient.age < 18 else None
     chunks = search_chunks(db, request.message, age_range=age_range)
 
     refused = should_refuse(chunks)
 
+    # Pre-fetch history BEFORE the generator (while db session is active)
+    history_msgs = db.query(Message).filter(
+        Message.conversation_id == conv_id
+    ).order_by(Message.created_at).all()
+    history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
+
     async def event_generator():
         if refused:
-            yield {"event": "token", "data": REFUSAL_MESSAGE}
+            # Fallback: still try with general knowledge
+            messages_for_llm = build_prompt(request.message, [], patient_info, history)
+            full_answer = ""
+            async for token in generate_response_stream(messages_for_llm):
+                full_answer += token
+                yield {"event": "token", "data": token}
+
+            confidence = 0.3
+            urgency = assess_urgency(full_answer, [])
+            citation_dicts = []
+
+            assistant_msg = Message(
+                conversation_id=conv_id, role="assistant", content=full_answer,
+                citations=[], confidence_score=confidence, refused=False,
+            )
+            db.add(assistant_msg)
+            db.commit()
+
             yield {"event": "done", "data": json.dumps({
-                "conversation_id": str(conversation.id),
-                "refused": True, "confidence_score": 0.0, "urgency": "none", "citations": [],
+                "conversation_id": str(conv_id),
+                "refused": False, "confidence_score": confidence,
+                "urgency": urgency, "citations": [],
             })}
             return
-
-        history_msgs = db.query(Message).filter(
-            Message.conversation_id == conversation.id
-        ).order_by(Message.created_at).all()
-        history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
 
         messages_for_llm = build_prompt(request.message, chunks, patient_info, history)
 
@@ -215,14 +236,14 @@ async def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
 
         # Save assistant message
         assistant_msg = Message(
-            conversation_id=conversation.id, role="assistant", content=full_answer,
+            conversation_id=conv_id, role="assistant", content=full_answer,
             citations=citation_dicts, confidence_score=confidence, refused=False,
         )
         db.add(assistant_msg)
         db.commit()
 
         yield {"event": "done", "data": json.dumps({
-            "conversation_id": str(conversation.id),
+            "conversation_id": str(conv_id),
             "refused": False, "confidence_score": confidence,
             "urgency": urgency, "citations": citation_dicts,
         })}

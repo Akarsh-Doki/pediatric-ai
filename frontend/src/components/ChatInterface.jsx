@@ -1,11 +1,110 @@
 import { useState, useRef, useEffect } from 'react';
 import CitationPanel from './CitationPanel';
 
+function cleanText(text) {
+  if (!text) return '';
+  return text
+    .replace(/\s+([.,!?;:])/g, '$1')           // remove space before punctuation
+    .replace(/\(\s+/g, '(')                      // remove space after opening paren
+    .replace(/\s+\)/g, ')')                      // remove space before closing paren
+    .replace(/(\w)\s{2,}(\w)/g, '$1 $2')         // collapse multiple spaces
+    .replace(/\b(\w+)\s+(\w+)\b/g, (match, a, b) => {
+      // Rejoin common medical terms that got split
+      const joined = a + b;
+      const medTerms = ['acetaminophen','ibuprofen','tylenol','motrin','amoxicillin',
+        'pediatrician','dehydration','temperature','typically','relieving'];
+      if (medTerms.includes(joined.toLowerCase())) return joined;
+      return match;
+    });
+}
+
+function formatMessage(text) {
+  if (!text) return null;
+  text = cleanText(text);
+
+  // Split into paragraphs by double newline or numbered list items
+  const blocks = text.split(/\n\n+/);
+
+  return blocks.map((block, blockIdx) => {
+    // Check if block is a numbered list
+    const listItems = block.split(/\n/).filter(l => l.trim());
+    const isNumberedList = listItems.length > 1 && listItems.every(l => /^\d+[\.\)]/.test(l.trim()));
+
+    if (isNumberedList) {
+      return (
+        <ol key={blockIdx} className="list-decimal list-inside space-y-1 my-2">
+          {listItems.map((item, i) => (
+            <li key={i} className="text-sm leading-relaxed">
+              {renderInline(item.replace(/^\d+[\.\)]\s*/, ''))}
+            </li>
+          ))}
+        </ol>
+      );
+    }
+
+    // Check if block has bullet points
+    const bulletItems = block.split(/\n/).filter(l => l.trim());
+    const isBulletList = bulletItems.length > 1 && bulletItems.every(l => /^[\*\-•]/.test(l.trim()));
+
+    if (isBulletList) {
+      return (
+        <ul key={blockIdx} className="list-disc list-inside space-y-1 my-2">
+          {bulletItems.map((item, i) => (
+            <li key={i} className="text-sm leading-relaxed">
+              {renderInline(item.replace(/^[\*\-•]\s*/, ''))}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    // Regular paragraph - handle single newlines as line breaks
+    const lines = block.split(/\n/);
+    return (
+      <p key={blockIdx} className="text-sm leading-relaxed mb-2">
+        {lines.map((line, i) => (
+          <span key={i}>
+            {renderInline(line)}
+            {i < lines.length - 1 && <br />}
+          </span>
+        ))}
+      </p>
+    );
+  });
+}
+
+function renderInline(text) {
+  // Handle **bold** and *italic*
+  const parts = [];
+  let remaining = text;
+  let key = 0;
+
+  while (remaining.length > 0) {
+    // Match **bold**
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    if (boldMatch) {
+      const beforeBold = remaining.slice(0, boldMatch.index);
+      if (beforeBold) parts.push(<span key={key++}>{beforeBold}</span>);
+      parts.push(<strong key={key++} className="font-semibold">{boldMatch[1]}</strong>);
+      remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
+      continue;
+    }
+
+    // No more formatting found
+    parts.push(<span key={key++}>{remaining}</span>);
+    break;
+  }
+
+  return parts;
+}
+
 export default function ChatInterface({ messages, isLoading, onSend, disabled }) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isLoading]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,13 +123,21 @@ export default function ChatInterface({ messages, isLoading, onSend, disabled })
                 backgroundColor: msg.role === 'user' ? 'var(--bubble-user)' : 'var(--bubble-assistant)',
                 color: msg.role === 'user' ? 'var(--bubble-user-text)' : 'var(--bubble-assistant-text)',
               }}>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
-              {msg.role === 'assistant' && msg.citations && <CitationPanel citations={msg.citations} />}
-              {msg.refused && <div className="mt-2 text-xs opacity-70">⚠️ Limited confidence — please consult your pediatrician</div>}
+              {msg.role === 'user' ? (
+                <p className="text-sm leading-relaxed">{msg.content}</p>
+              ) : (
+                <div>{formatMessage(msg.content)}</div>
+              )}
+              {msg.role === 'assistant' && !msg.streaming && msg.citations && msg.citations.length > 0 && (
+                <CitationPanel citations={msg.citations} />
+              )}
+              {msg.confidence && msg.confidence < 0.5 && !msg.streaming && (
+                <div className="mt-2 text-xs opacity-70">Low confidence — consider consulting your pediatrician</div>
+              )}
             </div>
           </div>
         ))}
-        {isLoading && (
+        {isLoading && messages.length > 0 && !messages[messages.length - 1]?.streaming && (
           <div className="flex justify-start">
             <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ backgroundColor: 'var(--bubble-assistant)' }}>
               <div className="flex gap-1.5">

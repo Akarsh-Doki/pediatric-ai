@@ -7,7 +7,7 @@ import ChatInterface from './components/ChatInterface';
 import Sidebar from './components/Sidebar';
 
 const SUGGESTIONS = [
-  "My child has a 102°F fever and won't eat",
+  "My child has a 102\u00b0F fever and won't eat",
   "Is this rash something to worry about?",
   "Can I give Tylenol with antibiotics?",
   "When should I take my child to the ER?",
@@ -31,15 +31,17 @@ export default function App() {
   const suggestionsRef = useRef(null);
 
   const isConversationActive = messages.length > 0;
-
   const [expression, setExpression] = useState('idle');
+  const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+  const isStreaming = lastMsg?.streaming && lastMsg?.content?.length > 0;
   useEffect(() => {
-    if (isLoading) setExpression('thinking');
+    if (isStreaming) setExpression('talking');
+    else if (isLoading) setExpression('thinking');
     else if (isPlaying) setExpression('talking');
     else if (lastResponse?.urgency === 'severe' || lastResponse?.urgency === 'moderate') setExpression('concerned');
     else if (lastResponse?.urgency === 'mild') setExpression('reassuring');
     else setExpression('idle');
-  }, [isLoading, isPlaying, lastResponse]);
+  }, [isLoading, isPlaying, isStreaming, lastResponse]);
 
   useEffect(() => {
     if (lastResponse?.audio_base64 && voiceEnabled) play(lastResponse.audio_base64);
@@ -98,8 +100,7 @@ export default function App() {
   return (
     <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* Sidebar overlay */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar selectedPatient={selectedPatient} onSelectPatient={setSelectedPatient}
           doctorGender={doctorGender} onDoctorGenderChange={setDoctorGender}
           voiceEnabled={voiceEnabled} onVoiceToggle={() => setVoiceEnabled(!voiceEnabled)}
@@ -121,23 +122,27 @@ export default function App() {
           </button>
           <span onClick={handleNewChat} className="text-sm font-medium cursor-pointer hover:opacity-70" style={{ color: 'var(--text-primary)' }}>PediatricAI</span>
           <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            {selectedPatient ? `${selectedPatient.name} (${selectedPatient.age}y)` : 'No patient selected'}
+            {selectedPatient ? selectedPatient.name + ' (' + selectedPatient.age + 'y)' : 'No patient selected'}
           </span>
         </div>
 
         {!isConversationActive ? (
-          <div className="flex-1 flex flex-col items-center pt-6 px-4">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-40 h-40 md:w-52 md:h-52">
-                <DoctorFace expression={expression} isPlaying={isPlaying} gender={doctorGender} size="centered" />
-              </div>
-              <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Hi, I'm PediatricAI</h1>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>I'm here to help with your child's health questions.</p>
+          /* Landing screen — centered vertically and horizontally */
+          <div className="flex-1 flex flex-col items-center justify-center px-4 -mt-36">
+            {/* Doctor face — large and centered */}
+            <div style={{ width: '350px', height: '350px' }}>
+              <DoctorFace expression={expression} isPlaying={isPlaying} gender={doctorGender} size="centered" />
             </div>
 
-            <div className="w-full max-w-xl mt-6 relative">
+            {/* Title directly under doctor */}
+            <h1 className="text-2xl font-semibold mt-3" style={{ color: 'var(--text-primary)' }}>Hi, I'm PediatricAI</h1>
+            <p className="text-sm mt-1 mb-6" style={{ color: 'var(--text-secondary)' }}>I'm here to help with your child's health questions.</p>
+
+            {/* Search area */}
+            <div className="w-full max-w-2xl relative">
+              {/* Inline patient form */}
               {showPatientPrompt && (
-                <div className="mb-3 p-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                <div className="mb-3 p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                   <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Tell me about your child:</p>
                   <div className="flex gap-2 mb-2">
                     <input placeholder="Name" value={patientForm.name}
@@ -146,7 +151,7 @@ export default function App() {
                       style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                     <input placeholder="Age" type="number" min="0" max="18" value={patientForm.age}
                       onChange={e => setPatientForm(p => ({ ...p, age: e.target.value }))}
-                      className="w-16 px-3 py-2 rounded-lg border text-sm outline-none"
+                      className="w-20 px-3 py-2 rounded-lg border text-sm outline-none"
                       style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                     <select value={patientForm.sex} onChange={e => setPatientForm(p => ({ ...p, sex: e.target.value }))}
                       className="px-3 py-2 rounded-lg border text-sm outline-none"
@@ -168,17 +173,18 @@ export default function App() {
                 </div>
               )}
 
-              <form onSubmit={e => { e.preventDefault(); handleSend(inputValue); }} className="flex gap-2">
+              <form onSubmit={e => { e.preventDefault(); handleSend(inputValue); }} className="flex gap-3">
                 <input ref={inputRef} name="message" placeholder="Describe your symptoms..."
                   value={inputValue} onChange={e => setInputValue(e.target.value)}
                   onFocus={() => setInputFocused(true)}
-                  className="flex-1 px-4 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-blue-400"
+                  className="flex-1 px-5 py-4 rounded-2xl border text-base outline-none focus:ring-2 focus:ring-blue-400"
                   style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                 <button type="submit" disabled={isLoading || !inputValue.trim()}
-                  className="px-6 py-3 rounded-xl font-medium text-sm text-white disabled:opacity-50 cursor-pointer"
+                  className="px-8 py-4 rounded-2xl font-medium text-base text-white disabled:opacity-50 cursor-pointer"
                   style={{ backgroundColor: 'var(--accent)' }}>Send</button>
               </form>
 
+              {/* Suggestions dropdown */}
               {showSuggestions && (
                 <div ref={suggestionsRef}
                   className="absolute left-0 right-0 mt-2 rounded-xl border shadow-lg overflow-hidden z-10"
@@ -188,7 +194,7 @@ export default function App() {
                   </p>
                   {SUGGESTIONS.map((s, i) => (
                     <button key={i} onClick={() => { setInputValue(s); setInputFocused(false); handleSend(s); }}
-                      className="w-full text-left px-4 py-2.5 text-sm hover:brightness-95 cursor-pointer transition-colors"
+                      className="w-full text-left px-4 py-3 text-sm hover:brightness-95 cursor-pointer transition-colors"
                       style={{ color: 'var(--text-primary)', borderBottom: i < SUGGESTIONS.length - 1 ? '1px solid var(--border)' : 'none' }}>
                       {s}
                     </button>
@@ -198,6 +204,7 @@ export default function App() {
             </div>
           </div>
         ) : (
+          /* Chat active screen */
           <div className="flex-1 flex overflow-hidden">
             <div className="hidden md:flex flex-col items-center justify-center w-56 p-3 shrink-0" style={{ borderRight: '1px solid var(--border)' }}>
               <DoctorFace expression={expression} isPlaying={isPlaying} gender={doctorGender} size="sidebar" />
