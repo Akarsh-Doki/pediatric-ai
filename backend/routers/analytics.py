@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends # APIRouter allows you to make a group of related endpoints, and depends tells FastAPI: "before running this function, call get_db(), get the database session it yields, and pass it as the db parameter"
+from sqlalchemy.orm import Session # Type hint for the database session
 from sqlalchemy import func, text
 
-from backend.models.database import get_db, Event, Message, SymptomExtraction
+from backend.models.database import get_db, Event, Message, SymptomExtraction 
 from backend.models.schemas import AnalyticsDashboard
 
 logger = logging.getLogger("pediatricai")
