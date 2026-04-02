@@ -13,19 +13,19 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
 @router.get("/dashboard", response_model=AnalyticsDashboard)
-def get_dashboard(db: Session = Depends(get_db)):
-    total = db.query(Event).filter(Event.event_type == "query").count()
+def get_dashboard(db: Session = Depends(get_db)): # This will return the health metrics of the system
+    total = db.query(Event).filter(Event.event_type == "query").count() # This is the total number of queries ever made
 
     avg_latency_result = db.execute(
         text("SELECT AVG((payload->>'latency_ms')::float) FROM events WHERE event_type = 'query'")
     ).scalar()
     avg_latency = round(float(avg_latency_result or 0), 1)
 
-    refused_count = db.query(Message).filter(Message.refused == True).count()
-    total_assistant = db.query(Message).filter(Message.role == "assistant").count()
+    refused_count = db.query(Message).filter(Message.refused == True).count() # Calculates what percentage of responses were refusals
+    total_assistant = db.query(Message).filter(Message.role == "assistant").count() 
     refusal_rate = round(refused_count / max(total_assistant, 1), 3)
 
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0) # Counts queries since midnight UTC today
     queries_today = db.query(Event).filter(
         Event.event_type == "query", Event.created_at >= today_start,
     ).count()
@@ -38,7 +38,7 @@ def get_dashboard(db: Session = Depends(get_db)):
     """)).fetchall()
     top_symptoms = [{"symptom": row[0], "count": row[1]} for row in top_symptoms_raw]
 
-    return AnalyticsDashboard(
+    return AnalyticsDashboard( # Returns all metrics as a single dashboard response.
         total_queries=total, avg_latency_ms=avg_latency,
         refusal_rate=refusal_rate, top_symptoms=top_symptoms,
         queries_today=queries_today,

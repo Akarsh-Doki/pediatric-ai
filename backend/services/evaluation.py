@@ -5,7 +5,7 @@ logger = logging.getLogger("pediatricai")
 settings = get_settings()
 
 
-def should_refuse(chunks: list[dict]) -> bool:
+def should_refuse(chunks: list[dict]) -> bool: # If retrieval returned zero chunks 
     """Only refuse if truly nothing relevant was found."""
     if not chunks:
         return True
@@ -17,7 +17,7 @@ def should_refuse(chunks: list[dict]) -> bool:
     return False
 
 
-def compute_confidence(chunks: list[dict]) -> float:
+def compute_confidence(chunks: list[dict]) -> float: # This is Weighted confidence score. Why weighted toward the best match? Because one highly relevant chunk is more useful than five mediocre ones.
     if not chunks:
         return 0.0
     similarities = [c.get("similarity", 0) for c in chunks]
@@ -27,7 +27,7 @@ def compute_confidence(chunks: list[dict]) -> float:
     return round(min(confidence, 1.0), 3)
 
 
-def is_low_confidence(chunks: list[dict]) -> bool:
+def is_low_confidence(chunks: list[dict]) -> bool: # Checks if enough high-quality chunks were found
     """Check if we have chunks but they're borderline quality."""
     if not chunks:
         return True

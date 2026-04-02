@@ -9,7 +9,7 @@ logger = logging.getLogger("pediatricai")
 settings = get_settings()
 
 
-def search_chunks(
+def search_chunks( # The main retrieval function
     db: Session,
     query: str,
     top_k: int = None,
@@ -19,9 +19,9 @@ def search_chunks(
     if top_k is None:
         top_k = settings.retrieval_top_k
 
-    query_embedding = embed_text(query)
+    query_embedding = embed_text(query) # Encodes the parent's question into the same 384-dimensional vector space as the stored chunks. 
 
-    filters = []
+    filters = [] # This builds dynamic SQL filters
     params = {
         "embedding": str(query_embedding),
         "top_k": top_k,
@@ -41,17 +41,17 @@ def search_chunks(
         SELECT c.id, c.chunk_text, c.page_num, c.section_type,
                c.condition_category, c.doc_id,
                d.title AS doc_title, d.source AS doc_source,
-               1 - (c.embedding <=> CAST(:embedding AS vector)) AS similarity
+               1 - (c.embedding <=> CAST(:embedding AS vector)) AS similarity 
         FROM chunks c
         JOIN guideline_docs d ON c.doc_id = d.id
         {where_clause}
         ORDER BY c.embedding <=> CAST(:embedding AS vector)
         LIMIT :top_k
-    """)
+    """) # This is the core similarity search query
 
-    results = db.execute(sql, params).fetchall()
+    results = db.execute(sql, params).fetchall() # This uses the query
 
-    chunks = []
+    chunks = [] # Filters results by the similarity threshold (0.55)
     for row in results:
         sim = float(row.similarity)
         if sim >= settings.similarity_threshold:
