@@ -14,6 +14,7 @@ from backend.services.generation import build_prompt, generate_response, generat
 from backend.services.tts_service import synthesize_speech
 from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
 from backend.utils.symptoms import extract_symptoms
+from backend.services.clarification import detect_ambiguity
 # Every service in the RAG pipeline imported from the backend
 
 logger = logging.getLogger("pediatricai")
@@ -53,6 +54,46 @@ async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
     db.add(user_msg)
     db.commit()
     db.refresh(user_msg)
+
+    # --- AMBIGUITY CHECK (runs before retrieval to save compute) ---
+    ambiguity = detect_ambiguity(request.message)
+    if ambiguity["is_ambiguous"]:
+        logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {request.message[:60]}")
+        answer = ambiguity["followup_question"]
+
+        assistant_msg = Message(
+            conversation_id=conversation.id, role="assistant", content=answer,
+            citations=[], confidence_score=1.0, refused=False,
+        )
+        db.add(assistant_msg)
+
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        event = Event(
+            patient_id=patient.id, event_type="query",
+            payload={
+                "latency_ms": elapsed_ms, "tokens_used": 0,
+                "retrieval_count": 0, "confidence": 1.0,
+                "refused": False, "urgency": "none",
+                "symptoms_extracted": [],
+                "clarification_requested": True,
+            },
+        )
+        db.add(event)
+        db.commit()
+
+        audio_base64 = None
+        if request.voice_enabled:
+            try:
+                tts_result = await synthesize_speech(answer, request.doctor_gender)
+                audio_base64 = tts_result["audio_base64"]
+            except Exception as e:
+                logger.warning(f"TTS failed: {e}")
+
+        return ChatResponse(
+            answer=answer, audio_base64=audio_base64, citations=[],
+            confidence_score=1.0, refused=False, latency_ms=elapsed_ms,
+            tokens_used=0, conversation_id=conversation.id, urgency="none",
+        )
 
     # Extract symptoms from user message using keywords extraction, and adds to db
     symptom_data = extract_symptoms(request.message)
@@ -181,6 +222,35 @@ async def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
     conv_id = conversation.id
     patient_id_val = patient.id
 
+    # --- AMBIGUITY CHECK (before retrieval) ---
+    ambiguity = detect_ambiguity(request.message)
+
+    if ambiguity["is_ambiguous"]:
+        logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {request.message[:60]}")
+        clarification = ambiguity["followup_question"]
+
+        assistant_msg = Message(
+            conversation_id=conv_id, role="assistant", content=clarification,
+            citations=[], confidence_score=1.0, refused=False,
+        )
+        db.add(assistant_msg)
+        db.commit()
+
+        async def clarification_generator():
+            words = clarification.split(" ")
+            for i, word in enumerate(words):
+                token = word if i == 0 else " " + word
+                yield {"event": "token", "data": token}
+
+            yield {"event": "done", "data": json.dumps({
+                "conversation_id": str(conv_id),
+                "refused": False, "confidence_score": 1.0,
+                "urgency": "none", "citations": [],
+            })}
+
+        return EventSourceResponse(clarification_generator())
+
+    # --- NORMAL RAG PIPELINE ---
     age_range = "pediatric" if patient.age < 18 else None
     chunks = search_chunks(db, request.message, age_range=age_range)
 
@@ -248,7 +318,6 @@ async def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
         })}
 
     return EventSourceResponse(event_generator())
-
 
 @router.get("/history/{conversation_id}")
 def get_conversation_history(conversation_id: UUID, db: Session = Depends(get_db)): # Loads a past conversation. Used when a user clicks a conversation in the sidebar.
