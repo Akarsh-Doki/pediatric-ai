@@ -6,7 +6,7 @@ from backend.config import get_settings
 logger = logging.getLogger("pediatricai")
 
 @lru_cache(maxsize=1)
-def get_embedding_model() -> SentenceTransformer:
+def get_embedding_model() -> SentenceTransformer: # Loads the model once and caches it. maxsize=1 means only one model is cached 
     settings = get_settings()
     logger.info(f"Loading embedding model: {settings.embedding_model}")
     model = SentenceTransformer(settings.embedding_model)
@@ -14,13 +14,13 @@ def get_embedding_model() -> SentenceTransformer:
     return model
 
 
-def embed_text(text: str) -> list[float]:
+def embed_text(text: str) -> list[float]: # Embeds a single text string.
     model = get_embedding_model()
     embedding = model.encode(text, normalize_embeddings=True)
     return embedding.tolist()
 
 
-def embed_batch(texts: list[str]) -> list[list[float]]:
+def embed_batch(texts: list[str]) -> list[list[float]]: # Embeds multiple texts at once
     model = get_embedding_model()
     embeddings = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
     return [e.tolist() for e in embeddings]

@@ -3,7 +3,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql://pediatricai:pediatricai_dev_2024@localhost:5432/pediatricai"
+    database_url: str = "postgresql://pediatricai:pediatricai_dev_2024@localhost:5432/pediatricai" # The PostgreSQL connection string
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.2:3b"
 
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     llm_provider: str = "ollama"  # "ollama" or "openai"
 
     # Embeddings
-    embedding_model: str = "all-MiniLM-L6-v2"
+    embedding_model: str = "all-MiniLM-L6-v2" # The SentenceTransformer model name and its output dimensionality. These must match — all-MiniLM-L6-v2 always produces 384-dimensional vectors.
     embedding_dimensions: int = 384
 
     # TTS
