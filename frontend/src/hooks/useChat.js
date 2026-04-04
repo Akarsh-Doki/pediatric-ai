@@ -9,7 +9,7 @@ export function useChat() {
   const [conversationId, setConversationId] = useState(null);
   const [lastResponse, setLastResponse] = useState(null);
 
-  const sendMessage = useCallback(async (text, patientId, doctorGender = 'female', voiceEnabled = true) => {
+  const sendMessage = useCallback(async (text, patientId, doctorGender = 'male', voiceEnabled = true) => {
     if (!text.trim() || !patientId) return;
 
     const userMsg = { role: 'user', content: text, timestamp: new Date() };
@@ -20,6 +20,8 @@ export function useChat() {
       role: 'assistant', content: '', streaming: true, timestamp: new Date(),
     }]);
 
+    let fullAnswer = '';
+
     try {
       const response = await fetch(API_BASE + '/chat/stream', {
         method: 'POST',
@@ -29,13 +31,12 @@ export function useChat() {
           message: text,
           conversation_id: conversationId,
           doctor_gender: doctorGender,
-          voice_enabled: voiceEnabled,
+          voice_enabled: false,  // No backend TTS needed anymore
         }),
       });
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let fullAnswer = '';
       let buffer = '';
 
       while (true) {
@@ -74,6 +75,7 @@ export function useChat() {
                 refused: meta.refused,
                 urgency: meta.urgency,
                 citations: meta.citations || [],
+                speakText: voiceEnabled ? fullAnswer : null,  // Signal to App.jsx to speak
               });
 
               setMessages(prev => {
@@ -92,17 +94,6 @@ export function useChat() {
                 }
                 return updated;
               });
-
-              if (voiceEnabled && fullAnswer) {
-                try {
-                  const ttsResult = await api.synthesize({ text: fullAnswer, gender: doctorGender });
-                  if (ttsResult.audio_base64) {
-                    setLastResponse(prev => ({ ...prev, audio_base64: ttsResult.audio_base64 }));
-                  }
-                } catch (e) {
-                  console.warn('TTS failed:', e);
-                }
-              }
             } catch (e) {
               console.warn('Failed to parse stream metadata:', e);
             }

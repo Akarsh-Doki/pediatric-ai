@@ -2,30 +2,64 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 export function useAudioSync() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(new Audio());
+  const [canReplay, setCanReplay] = useState(false);
+  const lastTextRef = useRef('');
 
-  const play = useCallback((base64Audio) => {
-    if (!base64Audio) return;
-    const audio = audioRef.current;
-    audio.src = 'data:audio/mp3;base64,' + base64Audio;
-    audio.onplay = () => setIsPlaying(true);
-    audio.onended = () => setIsPlaying(false);
-    audio.onerror = () => setIsPlaying(false);
-    audio.play().catch(() => setIsPlaying(false));
+  const getVoice = useCallback(() => {
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = [
+      'Google UK English Male',
+      'Daniel',
+      'Arthur',
+      'Google US English',
+      'Alex',
+      'Samantha',
+    ];
+    for (const name of preferred) {
+      const found = voices.find(v => v.name.includes(name));
+      if (found) return found;
+    }
+    const english = voices.find(v => v.lang.startsWith('en'));
+    return english || voices[0];
   }, []);
+
+  const speak = useCallback((text) => {
+    if (!text) return;
+    window.speechSynthesis.cancel();
+
+    lastTextRef.current = text;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = getVoice();
+    utterance.rate = 1.25;
+    utterance.pitch = 0.9;
+    utterance.volume = 1.0;
+
+    utterance.onstart = () => { setIsPlaying(true); setCanReplay(false); };
+    utterance.onend = () => { setIsPlaying(false); setCanReplay(true); };
+    utterance.onerror = () => { setIsPlaying(false); setCanReplay(true); };
+
+    window.speechSynthesis.speak(utterance);
+  }, [getVoice]);
 
   const stop = useCallback(() => {
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
+    window.speechSynthesis.cancel();
     setIsPlaying(false);
+    setCanReplay(true);
   }, []);
 
+  const replay = useCallback(() => {
+    if (lastTextRef.current) {
+      speak(lastTextRef.current);
+    }
+  }, [speak]);
+
+  // Load voices
   useEffect(() => {
-    return () => {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-    };
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    return () => { window.speechSynthesis.cancel(); };
   }, []);
 
-  return { isPlaying, play, stop, audioRef };
+  return { isPlaying, canReplay, speak, stop, replay };
 }

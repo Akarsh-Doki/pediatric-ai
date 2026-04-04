@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     tts_voice_female: str = "en-GB-SoniaNeural"
     tts_voice_male: str = "en-GB-RyanNeural"
     tts_rate: str = "-10%"
-    tts_pitch: str = "-5%"
+    tts_pitch: str = "-5Hz"
 
     # RAG
     retrieval_top_k: int = 10

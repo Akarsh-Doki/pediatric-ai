@@ -17,9 +17,9 @@ const SUGGESTIONS = [
 
 export default function App() {
   const { messages, isLoading, sendMessage, resetChat, lastResponse, conversationId, loadConversation } = useChat();
-  const { isPlaying, play, stop } = useAudioSync();
+  const { isPlaying, canReplay, speak, stop, replay } = useAudioSync();
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [doctorGender, setDoctorGender] = useState('female');
+  const [doctorGender, setDoctorGender] = useState('male');
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -34,6 +34,7 @@ export default function App() {
   const [expression, setExpression] = useState('idle');
   const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
   const isStreaming = lastMsg?.streaming && lastMsg?.content?.length > 0;
+
   useEffect(() => {
     if (isStreaming) setExpression('talking');
     else if (isLoading) setExpression('thinking');
@@ -43,8 +44,9 @@ export default function App() {
     else setExpression('idle');
   }, [isLoading, isPlaying, isStreaming, lastResponse]);
 
+  // Trigger browser speech when response finishes streaming
   useEffect(() => {
-    if (lastResponse?.audio_base64 && voiceEnabled) play(lastResponse.audio_base64);
+    if (lastResponse?.speakText && voiceEnabled) speak(lastResponse.speakText);
   }, [lastResponse]);
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export default function App() {
       setInputValue(text);
       return;
     }
+    // Stop any current speech — this is the interrupt
     stop();
     setInputValue('');
     setInputFocused(false);
@@ -112,7 +115,7 @@ export default function App() {
       {/* Main */}
       <div className="flex-1 flex flex-col h-full relative">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 py-2 border-b relative z-10" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-primary)' }}>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg cursor-pointer hover:opacity-70" style={{ color: 'var(--text-secondary)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="3" y1="6" x2="21" y2="6" />
@@ -127,20 +130,15 @@ export default function App() {
         </div>
 
         {!isConversationActive ? (
-          /* Landing screen — centered vertically and horizontally */
           <div className="flex-1 flex flex-col items-center justify-center px-4 -mt-36">
-            {/* Doctor face — large and centered */}
-            <div style={{ width: '350px', height: '350px' }}>
+            <div style={{ width: 'min(280px, 35vh)', height: 'min(280px, 35vh)' }}>
               <DoctorFace expression={expression} isPlaying={isPlaying} gender={doctorGender} size="centered" />
             </div>
 
-            {/* Title directly under doctor */}
             <h1 className="text-2xl font-semibold mt-3" style={{ color: 'var(--text-primary)' }}>Hi, I'm PediatricAI</h1>
             <p className="text-sm mt-1 mb-6" style={{ color: 'var(--text-secondary)' }}>I'm here to help with your child's health questions.</p>
 
-            {/* Search area */}
             <div className="w-full max-w-2xl relative">
-              {/* Inline patient form */}
               {showPatientPrompt && (
                 <div className="mb-3 p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                   <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Tell me about your child:</p>
@@ -184,11 +182,10 @@ export default function App() {
                   style={{ backgroundColor: 'var(--accent)' }}>Send</button>
               </form>
 
-              {/* Suggestions dropdown */}
               {showSuggestions && (
                 <div ref={suggestionsRef}
-                  className="absolute left-0 right-0 mt-2 rounded-xl border shadow-lg overflow-hidden z-10"
-                  style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                  className="absolute left-0 right-0 mt-2 rounded-xl border shadow-lg z-10"
+                  style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', maxHeight: '220px', overflowY: 'auto' }}>
                   <p className="px-4 py-2 text-xs font-medium" style={{ color: 'var(--text-secondary)', borderBottom: '1px solid var(--border)' }}>
                     Try asking...
                   </p>
@@ -204,13 +201,28 @@ export default function App() {
             </div>
           </div>
         ) : (
-          /* Chat active screen */
           <div className="flex-1 flex overflow-hidden">
             <div className="hidden md:flex flex-col items-center justify-center w-56 p-3 shrink-0" style={{ borderRight: '1px solid var(--border)' }}>
               <DoctorFace expression={expression} isPlaying={isPlaying} gender={doctorGender} size="sidebar" />
               <p className="text-xs mt-3 text-center" style={{ color: 'var(--text-secondary)' }}>
                 PediatricAI is {expression === 'thinking' ? 'thinking...' : expression === 'talking' ? 'speaking...' : 'listening'}
               </p>
+              {/* Stop button while speaking */}
+              {isPlaying && (
+                <button onClick={stop}
+                  className="mt-2 px-4 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
+                  style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+                  {'\u23f9'} Stop
+                </button>
+              )}
+              {/* Replay button after speech ends or was stopped */}
+              {!isPlaying && canReplay && (
+                <button onClick={replay}
+                  className="mt-2 px-4 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
+                  style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+                  {'\ud83d\udd01'} Replay
+                </button>
+              )}
             </div>
             <div className="flex-1 flex flex-col">
               <ChatInterface messages={messages} isLoading={isLoading} onSend={handleSend} disabled={!selectedPatient || isLoading} />

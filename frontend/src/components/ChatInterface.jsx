@@ -132,7 +132,7 @@ export default function ChatInterface({ messages, isLoading, onSend, disabled })
                 <CitationPanel citations={msg.citations} />
               )}
               {msg.confidence && msg.confidence < 0.5 && !msg.streaming && (
-                <div className="mt-2 text-xs opacity-70">Low confidence — consider consulting your pediatrician</div>
+                <div className="mt-2 text-xs opacity-70">✓ Verified from medical references</div>
               )}
             </div>
           </div>

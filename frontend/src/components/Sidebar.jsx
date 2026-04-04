@@ -56,21 +56,6 @@ export default function Sidebar({
       <ConversationList patientId={selectedPatient?.id} onSelect={onLoadConversation}
         currentConversationId={currentConversationId} />
 
-      {/* Doctor Gender */}
-      <div>
-        <h3 className={label} style={{ color: 'var(--text-secondary)' }}>Doctor</h3>
-        <div className="flex gap-2">
-          {['female', 'male'].map(g => (
-            <button key={g} onClick={() => onDoctorGenderChange(g)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${doctorGender === g ? 'ring-2 ring-blue-400' : ''}`}
-              style={{ backgroundColor: doctorGender === g ? 'var(--accent-light)' : 'var(--bg-primary)',
-                color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
-              {g === 'female' ? '👩‍⚕️ Female' : '👨‍⚕️ Male'}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Voice */}
       <div>
         <h3 className={label} style={{ color: 'var(--text-secondary)' }}>Voice</h3>
