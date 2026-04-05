@@ -3,9 +3,11 @@ import time # time is used to measure the latency of each query
 import json # serializing SSE "done" event metadata
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse # This is to provide Server-Sent Events, which is a protocol where the server pushes data to the client over a single HTTP connection. SSE is one way: server -> client. This is best for LLM token, where the server sends each token as it generates, and the frontend displays it immediately
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from backend.models.database import get_db, Patient, Conversation, Message, SymptomExtraction, Event
 from backend.models.schemas import ChatRequest, ChatResponse, CitationItem
@@ -22,9 +24,11 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 REFUSAL_MESSAGE = "I don't have enough information in my medical references to assess this safely. I'd recommend reaching out to your pediatrician \u2014 they'll be able to help. If it's after hours, most pediatrician offices have a nurse line you can call." # This is the response for hard refusals, only used if similarity is less than 0.45, but its very rare
 
+limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/query", response_model=ChatResponse)
-async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
+@limiter.limit("15/hour")
+async def chat_query(http_request: Request, request: ChatRequest, db: Session = Depends(get_db)):
     start_time = time.time() # Captures the moment that the request begins
 
     patient = db.query(Patient).filter(Patient.id == request.patient_id).first()
@@ -190,7 +194,8 @@ async def chat_query(request: ChatRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/stream")
-async def chat_stream(request: ChatRequest, db: Session = Depends(get_db)):
+@limiter.limit("15/hour")
+async def chat_stream(http_request: Request, request: ChatRequest, db: Session = Depends(get_db)):
     """SSE streaming endpoint - sends tokens as they generate."""
     patient = db.query(Patient).filter(Patient.id == request.patient_id).first()
     if not patient:
