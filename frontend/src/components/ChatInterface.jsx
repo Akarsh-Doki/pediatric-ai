@@ -131,20 +131,19 @@ export default function ChatInterface({ messages, isLoading, onSend, disabled })
               {msg.role === 'assistant' && !msg.streaming && msg.citations && msg.citations.length > 0 && (
                 <CitationPanel citations={msg.citations} />
               )}
-              {msg.confidence && msg.confidence < 0.5 && !msg.streaming && (
-                <div className="mt-2 text-xs opacity-70">✓ Verified from medical references</div>
+              {msg.confidence && msg.confidence >= 0.6 && !msg.streaming && (
+                <div className="mt-2 text-xs opacity-70" style={{ color: 'green' }}>✓ Verified from medical references</div>
               )}
             </div>
           </div>
         ))}
         {isLoading && messages.length > 0 && !messages[messages.length - 1]?.streaming && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ backgroundColor: 'var(--bubble-assistant)' }}>
-              <div className="flex gap-1.5">
-                <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--text-secondary)', animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--text-secondary)', animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'var(--text-secondary)', animationDelay: '300ms' }} />
-              </div>
+            <div className="max-w-[80%] rounded-2xl rounded-bl-md px-4 py-4 space-y-2.5"
+              style={{ backgroundColor: 'var(--bubble-assistant)' }}>
+              <div className="h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--border)', width: '85%' }} />
+              <div className="h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--border)', width: '70%', animationDelay: '150ms' }} />
+              <div className="h-3 rounded-full animate-pulse" style={{ backgroundColor: 'var(--border)', width: '55%', animationDelay: '300ms' }} />
             </div>
           </div>
         )}
@@ -154,12 +153,18 @@ export default function ChatInterface({ messages, isLoading, onSend, disabled })
         <div className="flex gap-2">
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
             placeholder="Describe your symptoms..." disabled={disabled}
+            maxLength={5000}
             className="flex-1 px-4 py-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-blue-400 transition-all disabled:opacity-50"
             style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
           <button type="submit" disabled={disabled || !input.trim()}
             className="px-6 py-3 rounded-xl font-medium text-sm text-white transition-all disabled:opacity-50 cursor-pointer"
             style={{ backgroundColor: 'var(--accent)' }}>Send</button>
         </div>
+        {input.length > 0 && (
+          <p className="text-xs mt-1 text-right" style={{ color: input.length > 4500 ? '#e53e3e' : 'var(--text-secondary)' }}>
+            {input.length} / 5,000
+          </p>
+        )}
       </form>
     </div>
   );
