@@ -11,7 +11,7 @@ SYMPTOM_KEYWORDS = {
     "pain": ["pain", "hurts", "ache", "sore", "tender", "cramping"],
     "breathing_difficulty": ["breathing", "can't breathe", "wheezing", "gasping", "short of breath"],
     "congestion": ["congestion", "stuffy nose", "runny nose", "blocked nose"],
-    "earache": ["ear pain", "ear ache", "pulling ear", "ear hurts"],
+    "earache": ["ear pain", "ear ache", "pulling ear", "pulling at", "ear hurts"],
     "headache": ["headache", "head hurts", "head pain"],
     "swelling": ["swelling", "swollen", "puffy", "inflamed"],
     "bleeding": ["bleeding", "blood", "cut", "wound"],
