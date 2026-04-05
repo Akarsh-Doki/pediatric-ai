@@ -28,10 +28,10 @@ limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/query", response_model=ChatResponse)
 @limiter.limit("15/hour")
-async def chat_query(http_request: Request, request: ChatRequest, db: Session = Depends(get_db)):
+async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(get_db)):
     start_time = time.time() # Captures the moment that the request begins
 
-    patient = db.query(Patient).filter(Patient.id == request.patient_id).first()
+    patient = db.query(Patient).filter(Patient.id == body.patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found") # This checks if the patient exists, if not, sends a 404 error
 
@@ -43,8 +43,8 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
     } # converts the SQLAlchemy object into a plain dict, which gets injected into the LLM prompt
 
     # Get or create conversation using the first message
-    if request.conversation_id:
-        conversation = db.query(Conversation).filter(Conversation.id == request.conversation_id).first()
+    if body.conversation_id:
+        conversation = db.query(Conversation).filter(Conversation.id == body.conversation_id).first()
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
@@ -54,15 +54,15 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
         db.refresh(conversation)
 
     # Save user message to the database immediately
-    user_msg = Message(conversation_id=conversation.id, role="user", content=request.message)
+    user_msg = Message(conversation_id=conversation.id, role="user", content=body.message)
     db.add(user_msg)
     db.commit()
     db.refresh(user_msg)
 
     # --- AMBIGUITY CHECK (runs before retrieval to save compute) ---
-    ambiguity = detect_ambiguity(request.message)
+    ambiguity = detect_ambiguity(body.message)
     if ambiguity["is_ambiguous"]:
-        logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {request.message[:60]}")
+        logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {body.message[:60]}")
         answer = ambiguity["followup_question"]
 
         assistant_msg = Message(
@@ -86,9 +86,9 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
         db.commit()
 
         audio_base64 = None
-        if request.voice_enabled:
+        if body.voice_enabled:
             try:
-                tts_result = await synthesize_speech(answer, request.doctor_gender)
+                tts_result = await synthesize_speech(answer, body.doctor_gender)
                 audio_base64 = tts_result["audio_base64"]
             except Exception as e:
                 logger.warning(f"TTS failed: {e}")
@@ -100,7 +100,7 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
         )
 
     # Extract symptoms from user message using keywords extraction, and adds to db
-    symptom_data = extract_symptoms(request.message)
+    symptom_data = extract_symptoms(body.message)
     if symptom_data["symptoms"]:
         extraction = SymptomExtraction(
             message_id=user_msg.id,
@@ -112,7 +112,7 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
 
     # Retrieve relevant chunks (R in RAG) by embedding the question
     age_range = "pediatric" if patient.age < 18 else None
-    chunks = search_chunks(db, request.message, age_range=age_range)
+    chunks = search_chunks(db, body.message, age_range=age_range)
 
     refused = should_refuse(chunks) # This returns True if the best chunk similarity is below 0.45
     confidence = compute_confidence(chunks) # calculates the weighted score (0.6 × best + 0.4 × average)
@@ -124,7 +124,7 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
         ).order_by(Message.created_at).all()
         history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
 
-        messages = build_prompt(request.message, [], patient_info, history)
+        messages = build_prompt(body.message, [], patient_info, history)
         result = await generate_response(messages)
 
         answer = result["answer"]
@@ -139,7 +139,7 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
         ).order_by(Message.created_at).all()
         history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
 
-        messages = build_prompt(request.message, chunks, patient_info, history) # Builds the full prompt (system prompt + patient info + medical context chunks + conversation history + user question) and sends it to the LLM.
+        messages = build_prompt(body.message, chunks, patient_info, history) # Builds the full prompt (system prompt + patient info + medical context chunks + conversation history + user question) and sends it to the LLM.
         result = await generate_response(messages)
 
         answer = result["answer"]
@@ -158,9 +158,9 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
 
     # Generate TTS - If voice is enabled, converts the answer text to speech. 
     audio_base64 = None
-    if request.voice_enabled:
+    if body.voice_enabled:
         try:
-            tts_result = await synthesize_speech(answer, request.doctor_gender)
+            tts_result = await synthesize_speech(answer, body.doctor_gender)
             audio_base64 = tts_result["audio_base64"]
         except Exception as e:
             logger.warning(f"TTS failed (graceful degradation): {e}")
@@ -195,9 +195,9 @@ async def chat_query(http_request: Request, request: ChatRequest, db: Session = 
 
 @router.post("/stream")
 @limiter.limit("15/hour")
-async def chat_stream(http_request: Request, request: ChatRequest, db: Session = Depends(get_db)):
+async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends(get_db)):
     """SSE streaming endpoint - sends tokens as they generate."""
-    patient = db.query(Patient).filter(Patient.id == request.patient_id).first()
+    patient = db.query(Patient).filter(Patient.id == body.patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
@@ -208,8 +208,8 @@ async def chat_stream(http_request: Request, request: ChatRequest, db: Session =
         "medications": patient.medications or [],
     }
 
-    if request.conversation_id:
-        conversation = db.query(Conversation).filter(Conversation.id == request.conversation_id).first()
+    if body.conversation_id:
+        conversation = db.query(Conversation).filter(Conversation.id == body.conversation_id).first()
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
@@ -218,7 +218,7 @@ async def chat_stream(http_request: Request, request: ChatRequest, db: Session =
         db.commit()
         db.refresh(conversation)
 
-    user_msg = Message(conversation_id=conversation.id, role="user", content=request.message) # . After db.commit(), SQLAlchemy detaches the conversation and patient objects from the session. If the async generator later tries conversation.id, SQLAlchemy attempts a database query on a closed session and crashes with DetachedInstanceError
+    user_msg = Message(conversation_id=conversation.id, role="user", content=body.message) # . After db.commit(), SQLAlchemy detaches the conversation and patient objects from the session. If the async generator later tries conversation.id, SQLAlchemy attempts a database query on a closed session and crashes with DetachedInstanceError
     db.add(user_msg)
     db.commit()
 
@@ -228,10 +228,10 @@ async def chat_stream(http_request: Request, request: ChatRequest, db: Session =
     patient_id_val = patient.id
 
     # --- AMBIGUITY CHECK (before retrieval) ---
-    ambiguity = detect_ambiguity(request.message)
+    ambiguity = detect_ambiguity(body.message)
 
     if ambiguity["is_ambiguous"]:
-        logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {request.message[:60]}")
+        logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {body.message[:60]}")
         clarification = ambiguity["followup_question"]
 
         assistant_msg = Message(
@@ -257,7 +257,7 @@ async def chat_stream(http_request: Request, request: ChatRequest, db: Session =
 
     # --- NORMAL RAG PIPELINE ---
     age_range = "pediatric" if patient.age < 18 else None
-    chunks = search_chunks(db, request.message, age_range=age_range)
+    chunks = search_chunks(db, body.message, age_range=age_range)
 
     refused = should_refuse(chunks)
 
@@ -270,7 +270,7 @@ async def chat_stream(http_request: Request, request: ChatRequest, db: Session =
     async def event_generator():
         if refused:
             # Fallback: Even when retrieval found nothing, the LLM streams using general knowledge. generate_response_stream is an async generator that yields one token at a time 
-            messages_for_llm = build_prompt(request.message, [], patient_info, history)
+            messages_for_llm = build_prompt(body.message, [], patient_info, history)
             full_answer = ""
             async for token in generate_response_stream(messages_for_llm):
                 full_answer += token
@@ -292,7 +292,7 @@ async def chat_stream(http_request: Request, request: ChatRequest, db: Session =
                 "urgency": urgency, "citations": [],
             })}
             return
-        messages_for_llm = build_prompt(request.message, chunks, patient_info, history)
+        messages_for_llm = build_prompt(body.message, chunks, patient_info, history)
 
         full_answer = ""
         async for token in generate_response_stream(messages_for_llm):
