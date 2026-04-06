@@ -84,7 +84,7 @@ export function useChat() {
                 if (last && last.role === 'assistant') {
                   updated[updated.length - 1] = {
                     ...last,
-                    content: fullAnswer,
+                    content: meta.cleaned_answer || fullAnswer,
                     streaming: false,
                     citations: meta.citations,
                     confidence: meta.confidence_score,

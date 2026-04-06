@@ -299,6 +299,8 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
             confidence = 0.3
             urgency = assess_urgency(full_answer, [])
 
+            from backend.services.generation import fix_output_text
+            full_answer = fix_output_text(full_answer)
             assistant_msg = Message(
                 conversation_id=conv_id, role="assistant", content=full_answer,
                 citations=[], confidence_score=confidence, refused=False,
@@ -310,6 +312,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
                 "conversation_id": str(conv_id),
                 "refused": False, "confidence_score": confidence,
                 "urgency": urgency, "citations": [],
+                "cleaned_answer": full_answer,
             })}
             return
 
@@ -329,7 +332,8 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
              "excerpt": c["chunk_text"][:200], "similarity_score": round(c["similarity"], 3)}
             for c in chunks[:5]
         ]
-
+        from backend.services.generation import fix_output_text
+        full_answer = fix_output_text(full_answer)
         assistant_msg = Message(
             conversation_id=conv_id, role="assistant", content=full_answer,
             citations=citation_dicts, confidence_score=confidence, refused=False,
@@ -341,6 +345,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
             "conversation_id": str(conv_id),
             "refused": False, "confidence_score": confidence,
             "urgency": urgency, "citations": citation_dicts,
+            "cleaned_answer": full_answer,
         })}
 
     return EventSourceResponse(event_generator())

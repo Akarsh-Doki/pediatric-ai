@@ -29,7 +29,8 @@ export function useAudioSync() {
 
     lastTextRef.current = text;
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const cleanedText = text.replace(/\*\*/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanedText);
     utterance.voice = getVoice();
     utterance.rate = 1.25;
     utterance.pitch = 0.9;

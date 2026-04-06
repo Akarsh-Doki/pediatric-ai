@@ -178,22 +178,12 @@ async def generate_response_stream(messages: list[dict]):
     logger.info(f"STREAM PROVIDER: {settings.llm_provider}, KEY SET: {bool(settings.openai_api_key)}")
 
     # Collect all tokens first
-    full_text = ""
     if settings.llm_provider == "openai" and settings.openai_api_key:
         async for token in _stream_openai(messages):
-            full_text += token
+            yield token
     else:
         async for token in _stream_ollama(messages):
-            full_text += token
-
-    # Fix broken words on complete text
-    fixed = fix_output_text(full_text)
-
-    # Re-stream word by word for the frontend animation
-    words = fixed.split(' ')
-    for i, word in enumerate(words):
-        token = word if i == 0 else ' ' + word
-        yield token
+            yield token
 
 
 async def _stream_ollama(messages: list[dict]):
