@@ -276,7 +276,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
 
         return EventSourceResponse(clarification_generator())
 
-    # --- NORMAL RAG PIPELINE ---
+    # NORMAL RAG PIPELINE
     age_range = "pediatric" if patient.age < 18 else None
     chunks = search_chunks(db, body.message, age_range=age_range)
 

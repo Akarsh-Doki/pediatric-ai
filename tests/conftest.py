@@ -1,8 +1,3 @@
-"""
-Shared test fixtures for PediatricAI test suite.
-conftest.py is automatically loaded by pytest — any fixture defined here
-is available to all test files without importing.
-"""
 import pytest
 from unittest.mock import MagicMock
 from backend.config import get_settings

@@ -1,11 +1,3 @@
-"""
-Tests for the evaluation service — the safety layer that decides
-whether to refuse, warn, or proceed with a response.
-
-WHY THIS MATTERS: If these thresholds are wrong, the system either
-refuses everything (useless) or answers confidently with bad data
-(dangerous). These tests verify the exact boundaries.
-"""
 import pytest
 from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
 

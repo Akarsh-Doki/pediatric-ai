@@ -1,10 +1,3 @@
-"""
-Tests for the ambiguity detection / clarification service.
-
-This service runs BEFORE retrieval to catch vague queries that would
-produce bad embeddings and waste compute. Tests verify that specific
-medical queries pass through and vague queries get caught.
-"""
 import pytest
 from backend.services.clarification import detect_ambiguity
 

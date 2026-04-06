@@ -1,7 +1,3 @@
-"""
-Tests for symptom extraction — the keyword-based NLP that powers analytics.
-This doesn't affect retrieval or generation, but drives the dashboard.
-"""
 import pytest
 from backend.utils.symptoms import extract_symptoms
 
