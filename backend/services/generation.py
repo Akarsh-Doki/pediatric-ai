@@ -4,7 +4,6 @@ import httpx
 from backend.config import get_settings
 
 logger = logging.getLogger("pediatricai")
-settings = get_settings()
 
 SYSTEM_PROMPT = """You are PediatricAI, a friendly pediatrician. You speak directly to parents with warmth and confidence.
 
@@ -16,13 +15,14 @@ RULES:
 - Always give at least one thing the parent can do RIGHT NOW.
 - Never give specific dosages (mg amounts). Say what the medicine does and tell them to ask their pediatrician for exact dosing.
 - For off-topic questions (not health related): gently redirect to health topics.
-- Structure responses: acknowledge concern → explain what it likely is → home care steps → when to call their pediatrician.
+- Structure responses: acknowledge concern -> explain what it likely is -> home care steps -> when to call their pediatrician.
 - Cite which source you used when possible.
 
-EMERGENCY NUMBERS: 911 (emergencies), 1-800-222-1222 (Poison Control), 988 (Crisis Lifeline)""" # The system prompt is the instruction manual for the LLM, which defines a warm toned doctore
+EMERGENCY NUMBERS: 911 (emergencies), 1-800-222-1222 (Poison Control), 988 (Crisis Lifeline)"""
+
 
 def build_prompt(user_message, retrieved_chunks, patient_info, conversation_history=None):
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}] # This starts the message list with the system prompt
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     patient_context = f"\n\nPATIENT: {patient_info.get('name', 'Unknown')}, Age {patient_info.get('age', '?')}, {patient_info.get('sex', '?')}"
     if patient_info.get('weight_kg'):
@@ -33,7 +33,7 @@ def build_prompt(user_message, retrieved_chunks, patient_info, conversation_hist
         med_names = [m.get('name', str(m)) for m in patient_info['medications']]
         patient_context += f", Medications: {', '.join(med_names)}"
 
-    context_text = "\n\nMEDICAL CONTEXT (use ONLY this for medical answers):\n" # Injects the retrieved chunks directly into the system prompt. Each chunk is labeled with its source and page number so the LLM cna cite it.
+    context_text = "\n\nMEDICAL CONTEXT (use ONLY this for medical answers):\n"
     if retrieved_chunks:
         for i, chunk in enumerate(retrieved_chunks, 1):
             context_text += f"\n[Source {i}: {chunk['doc_title']}, p.{chunk.get('page_num', '?')} | {chunk.get('section_type', 'general')}]\n{chunk['chunk_text']}\n"
@@ -42,7 +42,7 @@ def build_prompt(user_message, retrieved_chunks, patient_info, conversation_hist
 
     messages[0]["content"] += patient_context + context_text
 
-    if conversation_history: # Adds the last 6 messages of conversation history. [-6:] takes the most recent 6 — enough for the LLM to understand follow-up questions
+    if conversation_history:
         for msg in conversation_history[-6:]:
             messages.append({"role": msg["role"], "content": msg["content"]})
 
@@ -50,14 +50,16 @@ def build_prompt(user_message, retrieved_chunks, patient_info, conversation_hist
     return messages
 
 
-async def generate_response(messages: list[dict]) -> dict: # Provider routing. Checks config to decide whether to use OpenAI (cloud, paid, better quality) or Ollama (local, free, lower quality)
+async def generate_response(messages: list[dict]) -> dict:
     """Generate response using configured LLM provider."""
+    settings = get_settings()
     if settings.llm_provider == "openai" and settings.openai_api_key:
         return await _generate_openai(messages)
     return await _generate_ollama(messages)
 
 
-async def _generate_ollama(messages: list[dict]) -> dict: # Creates an async HTTP client with a 120-second timeout.
+async def _generate_ollama(messages: list[dict]) -> dict:
+    settings = get_settings()
     start_time = time.time()
     async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.post(
@@ -66,7 +68,7 @@ async def _generate_ollama(messages: list[dict]) -> dict: # Creates an async HTT
                 "model": settings.ollama_model,
                 "messages": messages,
                 "stream": False,
-                "options": {"temperature": 0.3, "top_p": 0.9, "num_predict": 1024}, # 0.3 means that there is low randomness, as medical advice should be consistent, not creative. top_p = 0.9 only considers tokens whose cumulative probability is w/in the top 90%. num_predict=1024 is the maximum tokens to generate
+                "options": {"temperature": 0.3, "top_p": 0.9, "num_predict": 1024},
             },
         )
         response.raise_for_status()
@@ -80,7 +82,8 @@ async def _generate_ollama(messages: list[dict]) -> dict: # Creates an async HTT
     }
 
 
-async def _generate_openai(messages: list[dict]) -> dict: # OpenAI requires an API key in the Authorization header. Uses gpt-4o-mini
+async def _generate_openai(messages: list[dict]) -> dict:
+    settings = get_settings()
     start_time = time.time()
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(
@@ -93,7 +96,7 @@ async def _generate_openai(messages: list[dict]) -> dict: # OpenAI requires an A
                 "model": "gpt-4o-mini",
                 "messages": messages,
                 "temperature": 0.3,
-                "max_tokens": 1024,
+                "max_tokens": 800,
             },
         )
         response.raise_for_status()
@@ -107,8 +110,9 @@ async def _generate_openai(messages: list[dict]) -> dict: # OpenAI requires an A
     }
 
 
-async def generate_response_stream(messages: list[dict]): # An async generator that yields one token at a time.
+async def generate_response_stream(messages: list[dict]):
     """Streaming generator for SSE endpoint. Yields token strings."""
+    settings = get_settings()
     if settings.llm_provider == "openai" and settings.openai_api_key:
         async for token in _stream_openai(messages):
             yield token
@@ -117,7 +121,8 @@ async def generate_response_stream(messages: list[dict]): # An async generator t
             yield token
 
 
-async def _stream_ollama(messages: list[dict]): # client.stream() opens a streaming HTTP connection. Instead of waiting for the entire response, httpx receives data as Ollama generates it. 
+async def _stream_ollama(messages: list[dict]):
+    settings = get_settings()
     async with httpx.AsyncClient(timeout=120.0) as client:
         async with client.stream(
             "POST",
@@ -138,7 +143,8 @@ async def _stream_ollama(messages: list[dict]): # client.stream() opens a stream
                         yield token
 
 
-async def _stream_openai(messages: list[dict]): # OpenAI's streaming format is SSE
+async def _stream_openai(messages: list[dict]):
+    settings = get_settings()
     async with httpx.AsyncClient(timeout=60.0) as client:
         async with client.stream(
             "POST",
@@ -151,7 +157,7 @@ async def _stream_openai(messages: list[dict]): # OpenAI's streaming format is S
                 "model": "gpt-4o-mini",
                 "messages": messages,
                 "temperature": 0.3,
-                "max_tokens": 1024,
+                "max_tokens": 800,
                 "stream": True,
             },
         ) as response:
@@ -164,7 +170,7 @@ async def _stream_openai(messages: list[dict]): # OpenAI's streaming format is S
                         yield token
 
 
-def assess_urgency(answer: str, chunks: list[dict]) -> str: # Post-generation classification. Scans the LLM's response for urgency keywords
+def assess_urgency(answer: str, chunks: list[dict]) -> str:
     answer_lower = answer.lower()
     if any(w in answer_lower for w in ["call 911", "emergency", "immediately", "right now"]):
         return "severe"

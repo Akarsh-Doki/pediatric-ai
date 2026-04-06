@@ -28,6 +28,48 @@ def extract_text_from_pdf(file_path: str) -> list[dict]: # This opens the pdf fi
     logger.info(f"Extracted {len(pages)} pages from {file_path}") # logs the number of pages of text that there was
     return pages
 
+def clean_extracted_text(text: str) -> str:
+    """Fix common PDF extraction artifacts — broken words, extra spaces."""
+    import re
+    # Rejoin words that PDF extraction split with spaces
+    # Pattern: lowercase letter, space, lowercase letter(s) that form part of a word
+    # This catches most split-word artifacts from PDF text extraction
+    
+    # Fix specific known medical terms first
+    fixes = {
+        r'Ty\s*len\s*ol': 'Tylenol',
+        r'acet\s*amin\s*oph\s*en': 'acetaminophen',
+        r'ibu\s*pro\s*fen': 'ibuprofen',
+        r'Mot\s*rin': 'Motrin',
+        r'Ad\s*vil': 'Advil',
+        r'amox\s*i?\s*cill\s*in': 'amoxicillin',
+        r'Ped\s*i?\s*al\s*y\s*te': 'Pedialyte',
+        r'Gator\s*ade': 'Gatorade',
+        r'pediatr\s*ic\s*ian': 'pediatrician',
+        r'de\s*hydr\s*ation': 'dehydration',
+        r're\s*hydr\s*ation': 'rehydration',
+        r'bron\s*chi?\s*ol\s*itis': 'bronchiolitis',
+        r'humid\s*i?\s*fier': 'humidifier',
+        r'rel\s*iever': 'reliever',
+        r'rel\s*ieving': 'relieving',
+        r'ir\s*ritable': 'irritable',
+        r'leth\s*arg\s*ic': 'lethargic',
+        r'ur\s*inat\s*ing': 'urinating',
+        r'un\s*well': 'unwell',
+        r'con\s*gest\s*ion': 'congestion',
+        r'in\s*flam\s*m?\s*ation': 'inflammation',
+        r'vom\s*it\s*ing': 'vomiting',
+        r'di\s*arr?\s*hea': 'diarrhea',
+        r'temp\s*er\s*ature': 'temperature',
+        r'anti\s*bio\s*tics?': 'antibiotics',
+        r'pneu\s*mo\s*nia': 'pneumonia',
+    }
+    for pattern, replacement in fixes.items():
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    
+    # Collapse multiple spaces
+    text = re.sub(r'  +', ' ', text)
+    return text
 
 def detect_section_type(text: str) -> str: # Classifies what kind of medical content a chunk contains
     text_lower = text.lower()
@@ -103,9 +145,10 @@ def ingest_document(db: Session, doc_id: uuid.UUID) -> int: # Validates the docu
 
     pages = extract_text_from_pdf(doc.file_path) # Turns the PDF into a list of {page_num, text} dicts.
 
-    all_chunks = [] # For each page, splits the text into ~600-token pieces
+    all_chunks = []
     for page_data in pages:
-        page_chunks = chunk_text(page_data["text"])
+        cleaned_text = clean_extracted_text(page_data["text"])
+        page_chunks = chunk_text(cleaned_text)
         for chunk_str in page_chunks:
             all_chunks.append({"text": chunk_str, "page_num": page_data["page_num"]})
 
