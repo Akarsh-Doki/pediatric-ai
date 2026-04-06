@@ -1,11 +1,12 @@
 import logging
-import time # time is used to measure the latency of each query
-import json # serializing SSE "done" event metadata
+import time
+import json
+import re
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from sse_starlette.sse import EventSourceResponse # This is to provide Server-Sent Events, which is a protocol where the server pushes data to the client over a single HTTP connection. SSE is one way: server -> client. This is best for LLM token, where the server sends each token as it generates, and the frontend displays it immediately
+from sse_starlette.sse import EventSourceResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -17,32 +18,57 @@ from backend.services.tts_service import synthesize_speech
 from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
 from backend.utils.symptoms import extract_symptoms
 from backend.services.clarification import detect_ambiguity
-# Every service in the RAG pipeline imported from the backend
+
+
+def fix_broken_words(text: str) -> str:
+    """Fix broken words that the LLM copied from PDF chunks."""
+    fixes = {
+        r'Ped\s*ial\s*y\s*te': 'Pedialyte', r'pediatric\s*ian': 'pediatrician',
+        r'acet\s*amin\s*ophen': 'acetaminophen', r'Ty\s*len\s*ol': 'Tylenol',
+        r'ibu\s*profen': 'ibuprofen', r'Mot\s*rin': 'Motrin', r'Ad\s*vil': 'Advil',
+        r'hydr\s*ation': 'hydration', r'Hyd\s*ration': 'Hydration',
+        r'de\s*hydration': 'dehydration', r're\s*hydration': 'rehydration',
+        r'luk\s*ew\s*arm': 'lukewarm', r'Luk\s*ew\s*arm': 'Lukewarm',
+        r'wors\s*ens': 'worsens', r'sc\s*arring': 'scarring',
+        r'o\s*oz\s*ing': 'oozing', r'thick\s*ened': 'thickened',
+        r'bund\s*ling': 'bundling', r'sh\s*ivering': 'shivering',
+        r'd\s*rows\s*y': 'drowsy', r'ir\s*ritable': 'irritable',
+        r'leth\s*argic': 'lethargic', r'ur\s*inating': 'urinating',
+        r'com\s*ed\s*ogenic': 'comedogenic', r'oint\s*ment': 'ointment',
+        r'Mo\s*ist\s*ur\s*ize': 'Moisturize', r'moist\s*urize': 'moisturize',
+        r'Enc\s*ourage': 'Encourage', r'enc\s*ourage': 'encourage',
+        r'Admin\s*ister': 'Administer', r'admin\s*ister': 'administer',
+        r'Concentr\s*ation': 'Concentration', r'concentr\s*ation': 'concentration',
+        r'R\s*ashes': 'Rashes', r'E\s*czema': 'Eczema',
+        r'C\s*era\s*Ve': 'CeraVe', r'at\s*opic': 'atopic',
+    }
+    for pattern, replacement in fixes.items():
+        text = re.sub(pattern, replacement, text)
+    return text
+
 
 logger = logging.getLogger("pediatricai")
 router = APIRouter(prefix="/chat", tags=["chat"])
 
-REFUSAL_MESSAGE = "I don't have enough information in my medical references to assess this safely. I'd recommend reaching out to your pediatrician \u2014 they'll be able to help. If it's after hours, most pediatrician offices have a nurse line you can call." # This is the response for hard refusals, only used if similarity is less than 0.45, but its very rare
-
 limiter = Limiter(key_func=get_remote_address)
+
 
 @router.post("/query", response_model=ChatResponse)
 @limiter.limit("15/hour")
 async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(get_db)):
-    start_time = time.time() # Captures the moment that the request begins
+    start_time = time.time()
 
     patient = db.query(Patient).filter(Patient.id == body.patient_id).first()
     if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found") # This checks if the patient exists, if not, sends a 404 error
+        raise HTTPException(status_code=404, detail="Patient not found")
 
     patient_info = {
         "name": patient.name, "age": patient.age, "sex": patient.sex,
         "weight_kg": patient.weight_kg,
         "known_conditions": patient.known_conditions or [],
         "medications": patient.medications or [],
-    } # converts the SQLAlchemy object into a plain dict, which gets injected into the LLM prompt
+    }
 
-    # Get or create conversation using the first message
     if body.conversation_id:
         conversation = db.query(Conversation).filter(Conversation.id == body.conversation_id).first()
         if not conversation:
@@ -53,7 +79,6 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
         db.commit()
         db.refresh(conversation)
 
-    # Save user message to the database immediately
     user_msg = Message(conversation_id=conversation.id, role="user", content=body.message)
     db.add(user_msg)
     db.commit()
@@ -99,7 +124,7 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
             tokens_used=0, conversation_id=conversation.id, urgency="none",
         )
 
-    # Extract symptoms from user message using keywords extraction, and adds to db
+    # --- NORMAL RAG PIPELINE ---
     symptom_data = extract_symptoms(body.message)
     if symptom_data["symptoms"]:
         extraction = SymptomExtraction(
@@ -110,15 +135,13 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
         db.add(extraction)
         db.commit()
 
-    # Retrieve relevant chunks (R in RAG) by embedding the question
     age_range = "pediatric" if patient.age < 18 else None
     chunks = search_chunks(db, body.message, age_range=age_range)
 
-    refused = should_refuse(chunks) # This returns True if the best chunk similarity is below 0.45
-    confidence = compute_confidence(chunks) # calculates the weighted score (0.6 × best + 0.4 × average)
+    refused = should_refuse(chunks)
+    confidence = compute_confidence(chunks)
 
     if refused:
-        # Still try to help with general knowledge instead of hard refusing by using the LLM's general knowledge through a prompt
         history_msgs = db.query(Message).filter(
             Message.conversation_id == conversation.id
         ).order_by(Message.created_at).all()
@@ -128,26 +151,28 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
         result = await generate_response(messages)
 
         answer = result["answer"]
+        answer = fix_broken_words(answer)
         tokens_used = result["tokens_used"]
         urgency = assess_urgency(answer, chunks)
         citations = []
         refused = False
         confidence = 0.3
-    else: # This is the normal RAG path, which fetches conversation history and excludes the current message
+    else:
         history_msgs = db.query(Message).filter(
             Message.conversation_id == conversation.id
         ).order_by(Message.created_at).all()
         history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
 
-        messages = build_prompt(body.message, chunks, patient_info, history) # Builds the full prompt (system prompt + patient info + medical context chunks + conversation history + user question) and sends it to the LLM.
+        messages = build_prompt(body.message, chunks, patient_info, history)
         result = await generate_response(messages)
 
         answer = result["answer"]
+        answer = fix_broken_words(answer)
         tokens_used = result["tokens_used"]
         urgency = assess_urgency(answer, chunks)
 
         citations = [
-            CitationItem( # citing sources
+            CitationItem(
                 doc_title=c["doc_title"], source=c["doc_source"],
                 page_num=c.get("page_num"), section_type=c.get("section_type"),
                 excerpt=c["chunk_text"][:200] + ("..." if len(c["chunk_text"]) > 200 else ""),
@@ -156,7 +181,6 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
             for c in chunks[:5]
         ]
 
-    # Generate TTS - If voice is enabled, converts the answer text to speech. 
     audio_base64 = None
     if body.voice_enabled:
         try:
@@ -165,7 +189,6 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
         except Exception as e:
             logger.warning(f"TTS failed (graceful degradation): {e}")
 
-    # Save assistant message to the database
     assistant_msg = Message(
         conversation_id=conversation.id, role="assistant", content=answer,
         citations=[c.model_dump() for c in citations],
@@ -173,7 +196,7 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
     )
     db.add(assistant_msg)
 
-    elapsed_ms = int((time.time() - start_time) * 1000) # Calculates total latency (time.time() - start_time in milliseconds) and saves everything to the events table. 
+    elapsed_ms = int((time.time() - start_time) * 1000)
     event = Event(
         patient_id=patient.id, event_type="query",
         payload={
@@ -186,7 +209,7 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
     db.add(event)
     db.commit()
 
-    return ChatResponse( # Returns the complete response
+    return ChatResponse(
         answer=answer, audio_base64=audio_base64, citations=citations,
         confidence_score=confidence, refused=refused, latency_ms=elapsed_ms,
         tokens_used=tokens_used, conversation_id=conversation.id, urgency=urgency,
@@ -218,12 +241,10 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
         db.commit()
         db.refresh(conversation)
 
-    user_msg = Message(conversation_id=conversation.id, role="user", content=body.message) # . After db.commit(), SQLAlchemy detaches the conversation and patient objects from the session. If the async generator later tries conversation.id, SQLAlchemy attempts a database query on a closed session and crashes with DetachedInstanceError
+    user_msg = Message(conversation_id=conversation.id, role="user", content=body.message)
     db.add(user_msg)
     db.commit()
 
-    # Capture IDs as plain values BEFORE the async generator
-    # (SQLAlchemy objects get detached from the session after commit)
     conv_id = conversation.id
     patient_id_val = patient.id
 
@@ -261,7 +282,6 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
 
     refused = should_refuse(chunks)
 
-    # Pre-fetch history BEFORE the generator (while db session is active)
     history_msgs = db.query(Message).filter(
         Message.conversation_id == conv_id
     ).order_by(Message.created_at).all()
@@ -269,15 +289,15 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
 
     async def event_generator():
         if refused:
-            # Fallback: Even when retrieval found nothing, the LLM streams using general knowledge. generate_response_stream is an async generator that yields one token at a time 
             messages_for_llm = build_prompt(body.message, [], patient_info, history)
             full_answer = ""
             async for token in generate_response_stream(messages_for_llm):
                 full_answer += token
                 yield {"event": "token", "data": token}
+
+            full_answer = fix_broken_words(full_answer)
             confidence = 0.3
-            urgency = assess_urgency(full_answer, []) # After streaming completes, assess the full answer for urgency keywords.
-            citation_dicts = []
+            urgency = assess_urgency(full_answer, [])
 
             assistant_msg = Message(
                 conversation_id=conv_id, role="assistant", content=full_answer,
@@ -292,6 +312,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
                 "urgency": urgency, "citations": [],
             })}
             return
+
         messages_for_llm = build_prompt(body.message, chunks, patient_info, history)
 
         full_answer = ""
@@ -299,6 +320,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
             full_answer += token
             yield {"event": "token", "data": token}
 
+        full_answer = fix_broken_words(full_answer)
         urgency = assess_urgency(full_answer, chunks)
         confidence = compute_confidence(chunks)
         citation_dicts = [
@@ -308,7 +330,6 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
             for c in chunks[:5]
         ]
 
-        # Save assistant message
         assistant_msg = Message(
             conversation_id=conv_id, role="assistant", content=full_answer,
             citations=citation_dicts, confidence_score=confidence, refused=False,
@@ -316,7 +337,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
         db.add(assistant_msg)
         db.commit()
 
-        yield {"event": "done", "data": json.dumps({ # The final SSE event, which sends metadata (conversation ID, confidence, urgency, citations) as a JSON string
+        yield {"event": "done", "data": json.dumps({
             "conversation_id": str(conv_id),
             "refused": False, "confidence_score": confidence,
             "urgency": urgency, "citations": citation_dicts,
@@ -324,13 +345,14 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
 
     return EventSourceResponse(event_generator())
 
+
 @router.get("/history/{conversation_id}")
-def get_conversation_history(conversation_id: UUID, db: Session = Depends(get_db)): # Loads a past conversation. Used when a user clicks a conversation in the sidebar.
+def get_conversation_history(conversation_id: UUID, db: Session = Depends(get_db)):
     conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    messages = db.query(Message).filter( # Gets all messages in chronological order.
+    messages = db.query(Message).filter(
         Message.conversation_id == conversation_id
     ).order_by(Message.created_at).all()
 

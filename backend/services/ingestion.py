@@ -16,58 +16,92 @@ logger = logging.getLogger("pediatricai")
 MANIFEST_PATH = "data/corpus_manifest.json" # Path to a JSON file that tracks what's been ingested
 
 
-def extract_text_from_pdf(file_path: str) -> list[dict]: # This opens the pdf file and loads it into memory
+def extract_text_from_pdf(file_path: str) -> list[dict]:
+    """Extract text using word-level blocks to avoid character spacing artifacts."""
     doc = fitz.open(file_path)
-    pages = [] # This code iterates through every page and extracts all the text content in reading order
+    pages = []
     for page_num in range(len(doc)):
         page = doc.load_page(page_num)
-        text = page.get_text("text")
-        if text.strip():
-            pages.append({"page_num": page_num + 1, "text": text.strip()})
+        # Use "words" mode — extracts text as word-level blocks
+        # Each word is: (x0, y0, x1, y1, "word", block_no, line_no, word_no)
+        words = page.get_text("words")
+        if words:
+            # Group words back into lines by y-position
+            lines = {}
+            for w in words:
+                y = round(w[1], 0)  # Round y-coordinate to group same-line words
+                if y not in lines:
+                    lines[y] = []
+                lines[y].append(w[4])  # w[4] is the word text
+            
+            # Join words into text, sorted by vertical position
+            text = '\n'.join(' '.join(words) for y, words in sorted(lines.items()))
+            if text.strip():
+                pages.append({"page_num": page_num + 1, "text": text.strip()})
     doc.close()
-    logger.info(f"Extracted {len(pages)} pages from {file_path}") # logs the number of pages of text that there was
+    logger.info(f"Extracted {len(pages)} pages from {file_path}")
     return pages
 
 def clean_extracted_text(text: str) -> str:
-    """Fix common PDF extraction artifacts — broken words, extra spaces."""
+    """
+    Fix broken words from PDF extraction using dictionary-based rejoining.
+    
+    PDF extractors often split words based on character positioning:
+    'acetaminophen' becomes 'acet amin oph en'. This function detects
+    fragments that aren't real words and joins them with neighbors
+    until they form valid English words.
+    """
     import re
-    # Rejoin words that PDF extraction split with spaces
-    # Pattern: lowercase letter, space, lowercase letter(s) that form part of a word
-    # This catches most split-word artifacts from PDF text extraction
+    from spellchecker import SpellChecker
     
-    # Fix specific known medical terms first
-    fixes = {
-        r'Ty\s*len\s*ol': 'Tylenol',
-        r'acet\s*amin\s*oph\s*en': 'acetaminophen',
-        r'ibu\s*pro\s*fen': 'ibuprofen',
-        r'Mot\s*rin': 'Motrin',
-        r'Ad\s*vil': 'Advil',
-        r'amox\s*i?\s*cill\s*in': 'amoxicillin',
-        r'Ped\s*i?\s*al\s*y\s*te': 'Pedialyte',
-        r'Gator\s*ade': 'Gatorade',
-        r'pediatr\s*ic\s*ian': 'pediatrician',
-        r'de\s*hydr\s*ation': 'dehydration',
-        r're\s*hydr\s*ation': 'rehydration',
-        r'bron\s*chi?\s*ol\s*itis': 'bronchiolitis',
-        r'humid\s*i?\s*fier': 'humidifier',
-        r'rel\s*iever': 'reliever',
-        r'rel\s*ieving': 'relieving',
-        r'ir\s*ritable': 'irritable',
-        r'leth\s*arg\s*ic': 'lethargic',
-        r'ur\s*inat\s*ing': 'urinating',
-        r'un\s*well': 'unwell',
-        r'con\s*gest\s*ion': 'congestion',
-        r'in\s*flam\s*m?\s*ation': 'inflammation',
-        r'vom\s*it\s*ing': 'vomiting',
-        r'di\s*arr?\s*hea': 'diarrhea',
-        r'temp\s*er\s*ature': 'temperature',
-        r'anti\s*bio\s*tics?': 'antibiotics',
-        r'pneu\s*mo\s*nia': 'pneumonia',
-    }
-    for pattern, replacement in fixes.items():
-        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    spell = SpellChecker()
     
-    # Collapse multiple spaces
+    # Process text line by line to preserve structure
+    lines = text.split('\n')
+    cleaned_lines = []
+    
+    for line in lines:
+        tokens = line.split(' ')
+        tokens = [t for t in tokens if t]  # remove empty strings
+        if not tokens:
+            cleaned_lines.append('')
+            continue
+        
+        result = []
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+            
+            # If this token is a real word or a number, keep it
+            if token.lower() in spell or re.match(r'^[\d.,;:!?()\-/°]+$', token):
+                result.append(token)
+                i += 1
+                continue
+            
+            # Token isn't a known word — try joining with next tokens
+            joined = token
+            j = i + 1
+            found = False
+            while j < len(tokens) and j - i < 5:  # look ahead up to 4 tokens
+                joined += tokens[j]
+                # Check if the joined version is a real word
+                if joined.lower() in spell:
+                    result.append(joined)
+                    i = j + 1
+                    found = True
+                    break
+                j += 1
+            
+            if not found:
+                # Couldn't rejoin into a known word — keep original token
+                result.append(token)
+                i += 1
+        
+        cleaned_lines.append(' '.join(result))
+    
+    text = '\n'.join(cleaned_lines)
+    
+    # Final pass: collapse multiple spaces
     text = re.sub(r'  +', ' ', text)
     return text
 

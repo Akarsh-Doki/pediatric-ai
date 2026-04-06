@@ -1,9 +1,64 @@
 import logging
 import time
+import re
 import httpx
 from backend.config import get_settings
+from spellchecker import SpellChecker
 
 logger = logging.getLogger("pediatricai")
+
+_spell = SpellChecker()
+# Add medical/brand terms the default dictionary might miss
+_spell.word_frequency.load_words([
+    'pedialyte', 'tylenol', 'motrin', 'advil', 'zyrtec', 'benadryl',
+    'amoxicillin', 'acetaminophen', 'ibuprofen', 'cerave', 'aquaphor',
+    'pediatrician', 'bronchiolitis', 'comedogenic', 'dermatitis',
+    'nebulizer', 'humidifier', 'thermometer', 'dehydration',
+    'rehydration', 'otitis', 'streptococcal', 'meningitis',
+])
+
+
+def fix_output_text(text: str) -> str:
+    """
+    Rejoin broken words in LLM output using dictionary lookup.
+    
+    When the LLM copies broken words from PDF chunks (e.g. 'pediatric ian'),
+    this function detects non-dictionary fragments and joins them with
+    neighbors until they form valid English words.
+    """
+    words = text.split(' ')
+    result = []
+    i = 0
+    while i < len(words):
+        word = words[i]
+        # Strip punctuation for dictionary check, keep original for output
+        clean = re.sub(r'[^a-zA-Z]', '', word)
+
+        # If it's a real word, number, empty, single char, or markdown, keep it
+        if not clean or clean.lower() in _spell or len(clean) <= 1 or word.startswith('**') or word.startswith('-'):
+            result.append(word)
+            i += 1
+            continue
+
+        # Not a real word — try joining with next 1-4 words
+        joined = word
+        best = None
+        for j in range(i + 1, min(i + 5, len(words))):
+            joined += words[j]
+            clean_joined = re.sub(r'[^a-zA-Z]', '', joined)
+            if clean_joined.lower() in _spell:
+                best = (joined, j + 1)
+                break
+
+        if best:
+            result.append(best[0])
+            i = best[1]
+        else:
+            result.append(word)
+            i += 1
+
+    return ' '.join(result)
+
 
 SYSTEM_PROMPT = """You are PediatricAI, a friendly pediatrician. You speak directly to parents with warmth and confidence.
 
@@ -17,6 +72,7 @@ RULES:
 - For off-topic questions (not health related): gently redirect to health topics.
 - Structure responses: acknowledge concern -> explain what it likely is -> home care steps -> when to call their pediatrician.
 - Cite which source you used when possible.
+- IMPORTANT: The medical context may contain broken words from PDF extraction. Always write every word with correct spelling in your response.
 
 EMERGENCY NUMBERS: 911 (emergencies), 1-800-222-1222 (Poison Control), 988 (Crisis Lifeline)"""
 
@@ -54,8 +110,11 @@ async def generate_response(messages: list[dict]) -> dict:
     """Generate response using configured LLM provider."""
     settings = get_settings()
     if settings.llm_provider == "openai" and settings.openai_api_key:
-        return await _generate_openai(messages)
-    return await _generate_ollama(messages)
+        result = await _generate_openai(messages)
+    else:
+        result = await _generate_ollama(messages)
+    result["answer"] = fix_output_text(result["answer"])
+    return result
 
 
 async def _generate_ollama(messages: list[dict]) -> dict:
@@ -111,14 +170,30 @@ async def _generate_openai(messages: list[dict]) -> dict:
 
 
 async def generate_response_stream(messages: list[dict]):
-    """Streaming generator for SSE endpoint. Yields token strings."""
+    """
+    Streaming generator that collects full response, fixes broken words,
+    then re-streams word by word for frontend animation.
+    """
     settings = get_settings()
+    logger.info(f"STREAM PROVIDER: {settings.llm_provider}, KEY SET: {bool(settings.openai_api_key)}")
+
+    # Collect all tokens first
+    full_text = ""
     if settings.llm_provider == "openai" and settings.openai_api_key:
         async for token in _stream_openai(messages):
-            yield token
+            full_text += token
     else:
         async for token in _stream_ollama(messages):
-            yield token
+            full_text += token
+
+    # Fix broken words on complete text
+    fixed = fix_output_text(full_text)
+
+    # Re-stream word by word for the frontend animation
+    words = fixed.split(' ')
+    for i, word in enumerate(words):
+        token = word if i == 0 else ' ' + word
+        yield token
 
 
 async def _stream_ollama(messages: list[dict]):

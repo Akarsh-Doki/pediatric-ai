@@ -168,7 +168,175 @@
       "file_path": "data/guidelines/tier2/emergency-first-aid-guide.pdf",
       "chunks_created": 12,
       "ingested_at": "2026-04-06T00:29:53.902028"
+    },
+    {
+      "title": "Who Imci Chart Booklet",
+      "source": "WHO",
+      "file_path": "data/guidelines/tier1/who-imci-chart-booklet.pdf",
+      "chunks_created": 104,
+      "ingested_at": "2026-04-06T02:02:08.456694"
+    },
+    {
+      "title": "Cdc Immunization Schedule",
+      "source": "CDC",
+      "file_path": "data/guidelines/tier1/cdc-immunization-schedule.pdf",
+      "chunks_created": 6,
+      "ingested_at": "2026-04-06T02:02:08.831731"
+    },
+    {
+      "title": "Pediatric Medical Reference",
+      "source": "MedlinePlus/NIH (Compiled Guide)",
+      "file_path": "data/guidelines/tier1/pediatric-medical-reference.pdf",
+      "chunks_created": 33,
+      "ingested_at": "2026-04-06T02:02:10.785922"
+    },
+    {
+      "title": "Pediatric Medications Reference",
+      "source": "FDA/DailyMed (Compiled Guide)",
+      "file_path": "data/guidelines/tier1/pediatric-medications-reference.pdf",
+      "chunks_created": 21,
+      "ingested_at": "2026-04-06T02:02:12.122802"
+    },
+    {
+      "title": "Cdc Developmental Milestones",
+      "source": "CDC",
+      "file_path": "data/guidelines/tier1/cdc-developmental-milestones.pdf",
+      "chunks_created": 39,
+      "ingested_at": "2026-04-06T02:02:13.420236"
+    },
+    {
+      "title": "Common Injuries First Aid",
+      "source": "American Red Cross",
+      "file_path": "data/guidelines/tier2/common-injuries-first-aid.pdf",
+      "chunks_created": 10,
+      "ingested_at": "2026-04-06T02:02:13.963669"
+    },
+    {
+      "title": "Fever Age 0 5",
+      "source": "Pediatric Hospital Reference",
+      "file_path": "data/guidelines/tier2/fever-age-0-5.pdf",
+      "chunks_created": 4,
+      "ingested_at": "2026-04-06T02:02:14.233245"
+    },
+    {
+      "title": "Fever Guide",
+      "source": "Pediatric Hospital Reference",
+      "file_path": "data/guidelines/tier2/fever-guide.pdf",
+      "chunks_created": 3,
+      "ingested_at": "2026-04-06T02:02:14.723604"
+    },
+    {
+      "title": "Common Childhood Conditions",
+      "source": "MedlinePlus/AAP (Compiled Guide)",
+      "file_path": "data/guidelines/tier2/common-childhood-conditions.pdf",
+      "chunks_created": 19,
+      "ingested_at": "2026-04-06T02:02:15.625585"
+    },
+    {
+      "title": "Fever Age 6 21",
+      "source": "Pediatric Hospital Reference",
+      "file_path": "data/guidelines/tier2/fever-age-6-21.pdf",
+      "chunks_created": 3,
+      "ingested_at": "2026-04-06T02:02:15.805606"
+    },
+    {
+      "title": "Children Health Guide",
+      "source": "AAP/CDC (Compiled Guide)",
+      "file_path": "data/guidelines/tier2/children-health-guide.pdf",
+      "chunks_created": 20,
+      "ingested_at": "2026-04-06T02:02:16.861348"
+    },
+    {
+      "title": "Emergency First Aid Guide",
+      "source": "Red Cross/AAP (Compiled Guide)",
+      "file_path": "data/guidelines/tier2/emergency-first-aid-guide.pdf",
+      "chunks_created": 12,
+      "ingested_at": "2026-04-06T02:02:17.524064"
+    },
+    {
+      "title": "Who Imci Chart Booklet",
+      "source": "WHO",
+      "file_path": "data/guidelines/tier1/who-imci-chart-booklet.pdf",
+      "chunks_created": 107,
+      "ingested_at": "2026-04-06T02:14:26.491716"
+    },
+    {
+      "title": "Cdc Immunization Schedule",
+      "source": "CDC",
+      "file_path": "data/guidelines/tier1/cdc-immunization-schedule.pdf",
+      "chunks_created": 6,
+      "ingested_at": "2026-04-06T02:14:26.938441"
+    },
+    {
+      "title": "Pediatric Medical Reference",
+      "source": "MedlinePlus/NIH (Compiled Guide)",
+      "file_path": "data/guidelines/tier1/pediatric-medical-reference.pdf",
+      "chunks_created": 33,
+      "ingested_at": "2026-04-06T02:14:29.220375"
+    },
+    {
+      "title": "Pediatric Medications Reference",
+      "source": "FDA/DailyMed (Compiled Guide)",
+      "file_path": "data/guidelines/tier1/pediatric-medications-reference.pdf",
+      "chunks_created": 21,
+      "ingested_at": "2026-04-06T02:14:30.587590"
+    },
+    {
+      "title": "Cdc Developmental Milestones",
+      "source": "CDC",
+      "file_path": "data/guidelines/tier1/cdc-developmental-milestones.pdf",
+      "chunks_created": 40,
+      "ingested_at": "2026-04-06T02:14:31.963411"
+    },
+    {
+      "title": "Common Injuries First Aid",
+      "source": "American Red Cross",
+      "file_path": "data/guidelines/tier2/common-injuries-first-aid.pdf",
+      "chunks_created": 10,
+      "ingested_at": "2026-04-06T02:14:32.520579"
+    },
+    {
+      "title": "Fever Age 0 5",
+      "source": "Pediatric Hospital Reference",
+      "file_path": "data/guidelines/tier2/fever-age-0-5.pdf",
+      "chunks_created": 4,
+      "ingested_at": "2026-04-06T02:14:32.810132"
+    },
+    {
+      "title": "Fever Guide",
+      "source": "Pediatric Hospital Reference",
+      "file_path": "data/guidelines/tier2/fever-guide.pdf",
+      "chunks_created": 3,
+      "ingested_at": "2026-04-06T02:14:33.082686"
+    },
+    {
+      "title": "Common Childhood Conditions",
+      "source": "MedlinePlus/AAP (Compiled Guide)",
+      "file_path": "data/guidelines/tier2/common-childhood-conditions.pdf",
+      "chunks_created": 19,
+      "ingested_at": "2026-04-06T02:14:34.005706"
+    },
+    {
+      "title": "Fever Age 6 21",
+      "source": "Pediatric Hospital Reference",
+      "file_path": "data/guidelines/tier2/fever-age-6-21.pdf",
+      "chunks_created": 3,
+      "ingested_at": "2026-04-06T02:14:34.188442"
+    },
+    {
+      "title": "Children Health Guide",
+      "source": "AAP/CDC (Compiled Guide)",
+      "file_path": "data/guidelines/tier2/children-health-guide.pdf",
+      "chunks_created": 20,
+      "ingested_at": "2026-04-06T02:14:35.297416"
+    },
+    {
+      "title": "Emergency First Aid Guide",
+      "source": "Red Cross/AAP (Compiled Guide)",
+      "file_path": "data/guidelines/tier2/emergency-first-aid-guide.pdf",
+      "chunks_created": 12,
+      "ingested_at": "2026-04-06T02:14:35.981145"
     }
   ],
-  "last_updated": "2026-04-06T00:29:53.902024"
+  "last_updated": "2026-04-06T02:14:35.981140"
 }
