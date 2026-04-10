@@ -45,14 +45,10 @@ def fix_broken_words(text: str) -> str:
     for pattern, replacement in fixes.items():
         text = re.sub(pattern, replacement, text)
     return text
-
-
 logger = logging.getLogger("pediatricai")
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 limiter = Limiter(key_func=get_remote_address)
-
-
 @router.post("/query", response_model=ChatResponse)
 @limiter.limit("15/hour")
 async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(get_db)):
@@ -84,7 +80,7 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
     db.commit()
     db.refresh(user_msg)
 
-    # --- AMBIGUITY CHECK (runs before retrieval to save compute) ---
+    # Used to check the ambiguity of the questions
     ambiguity = detect_ambiguity(body.message)
     if ambiguity["is_ambiguous"]:
         logger.info(f"Ambiguous query detected ({ambiguity['reason']}): {body.message[:60]}")
@@ -214,8 +210,6 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
         confidence_score=confidence, refused=refused, latency_ms=elapsed_ms,
         tokens_used=tokens_used, conversation_id=conversation.id, urgency=urgency,
     )
-
-
 @router.post("/stream")
 @limiter.limit("15/hour")
 async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends(get_db)):

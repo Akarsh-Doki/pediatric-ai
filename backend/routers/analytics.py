@@ -15,7 +15,6 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 @router.get("/dashboard", response_model=AnalyticsDashboard)
 def get_dashboard(db: Session = Depends(get_db)): # This will return the health metrics of the system
     total = db.query(Event).filter(Event.event_type == "query").count() # This is the total number of queries ever made
-
     avg_latency_result = db.execute(
         text("SELECT AVG((payload->>'latency_ms')::float) FROM events WHERE event_type = 'query'")
     ).scalar()
@@ -29,7 +28,6 @@ def get_dashboard(db: Session = Depends(get_db)): # This will return the health 
     queries_today = db.query(Event).filter(
         Event.event_type == "query", Event.created_at >= today_start,
     ).count()
-
     # Top symptoms from extractions
     top_symptoms_raw = db.execute(text("""
         SELECT symptom, COUNT(*) as cnt
