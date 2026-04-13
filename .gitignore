@@ -40,3 +40,10 @@ ollama_data/
 
 # Eval reports (regenerated)
 eval/report.md
+# === AWS Deployment (do not commit) ===
+.env                        # Local dev secrets (OpenAI key, DB password)
+.env.production.bak         # Backup of AWS secrets created by hibernate.sh
+frontend/.env.production    # Contains ALB URL (environment-specific)
+/tmp/task-def.json          # ECS task definition with account IDs
+/tmp/cf-output.json         # CloudFront creation output
+*.pem                       # SSH keys if you ever create EC2 instances
