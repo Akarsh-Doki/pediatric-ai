@@ -40,6 +40,7 @@ ollama_data/
 
 # Eval reports (regenerated)
 eval/report.md
+
 # === AWS Deployment (do not commit) ===
 .env                        # Local dev secrets (OpenAI key, DB password)
 .env.production.bak         # Backup of AWS secrets created by hibernate.sh
