@@ -47,3 +47,4 @@ frontend/.env.production
 /tmp/task-def.json
 /tmp/cf-output.json
 *.pem
+.env.production.bak
