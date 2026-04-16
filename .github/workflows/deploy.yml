@@ -1,0 +1,154 @@
+# ============================================================================
+# PediatricAI CI/CD Pipeline
+# ============================================================================
+# Triggers on every push to main. Runs tests first — if ANY test fails,
+# nothing deploys. If all pass, deploys backend to ECS and frontend to S3.
+# ============================================================================
+
+name: Deploy PediatricAI
+
+# When does this run?
+# Only on pushes to the main branch — not on feature branches or PRs
+on:
+  push:
+    branches: [main]
+
+jobs:
+
+  # ==========================================================================
+  # JOB 1: TEST
+  # Runs your pytest suite. If any test fails, the entire pipeline stops.
+  # This prevents broken code from reaching production.
+  # ==========================================================================
+  test:
+    runs-on: ubuntu-latest  # GitHub provides a fresh Ubuntu VM for each run
+
+    steps:
+      # Check out your code from the repo
+      - uses: actions/checkout@v4
+
+      # Install Python 3.11 (matches your local and Docker environments)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Install all Python dependencies
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      # Run the full test suite
+      # -v: verbose output (shows each test name and pass/fail)
+      # If ANY test fails, this step fails, and deploy jobs are skipped
+      - name: Run tests
+        run: python -m pytest tests/ -v
+
+  # ==========================================================================
+  # JOB 2: DEPLOY BACKEND
+  # Only runs if tests pass. Builds a new Docker image, pushes to ECR,
+  # and tells ECS to deploy it. Takes ~5 minutes.
+  # ==========================================================================
+  deploy-backend:
+    needs: test  # Waits for the test job to pass first
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Configure AWS credentials from your GitHub secrets
+      # This gives the GitHub runner permission to push to ECR and update ECS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Login to ECR so Docker can push images
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Build the production Docker image and push it to ECR
+      - name: Build and push Docker image
+        run: |
+          # Construct the ECR URI from your account ID
+          ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+
+          # Build for Linux/AMD64 (ECS runs Linux, not macOS)
+          # Uses Dockerfile.prod which includes health checks and 2 workers
+          docker build \
+            --platform linux/amd64 \
+            -f backend/Dockerfile.prod \
+            -t $ECR_URI/pediatricai-backend:latest .
+
+          # Push the image to ECR
+          docker push $ECR_URI/pediatricai-backend:latest
+
+      # Tell ECS to pull the new image and restart the container
+      - name: Deploy to ECS
+        run: |
+          # force-new-deployment: Even though the tag is "latest",
+          # ECS won't pull a new image unless you force it
+          aws ecs update-service \
+            --cluster pediatricai \
+            --service pediatricai-backend \
+            --force-new-deployment
+
+          echo "Backend deploying. New version live in ~3 minutes."
+
+  # ==========================================================================
+  # JOB 3: DEPLOY FRONTEND
+  # Only runs if tests pass. Builds the React app, uploads to S3,
+  # and invalidates the CloudFront cache so users get the new version.
+  # ==========================================================================
+  deploy-frontend:
+    needs: test  # Waits for the test job to pass first
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install Node.js 20 (matches your local environment)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Configure AWS credentials for S3 upload and CloudFront invalidation
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Build the production React bundle
+      - name: Build frontend
+        run: |
+          cd frontend
+
+          # Set the API URL to your ALB (the backend's public address)
+          echo "VITE_API_URL=${{ secrets.ALB_URL }}" > .env.production
+
+          # npm ci: Clean install using exact versions from package-lock.json
+          # This guarantees the same build every time
+          npm ci
+
+          # Build: Compiles React JSX → optimized HTML/CSS/JS in dist/
+          npm run build
+
+      # Upload to S3, replacing old files
+      - name: Upload to S3
+        run: |
+          # --delete: Remove files in S3 that aren't in dist/ (clean deploy)
+          aws s3 sync frontend/dist/ s3://${{ secrets.S3_BUCKET }}/ --delete
+
+      # Clear CloudFront's cache so users get the new version immediately
+      # Without this, CloudFront serves the old cached files for up to 24 hours
+      - name: Invalidate CloudFront cache
+        run: |
+          # "/*" means invalidate everything — the entire site gets refreshed
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CF_ID }} \
+            --paths "/*"
+
+          echo "Frontend deployed. CloudFront cache clearing (1-2 minutes)."
