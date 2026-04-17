@@ -30,7 +30,7 @@ A parent types "my child has a 102°F fever and won't eat." PediatricAI retrieve
 <!-- To record: use macOS screen recording or Loom, convert to GIF with gifski or ezgif.com -->
 <!-- Recommended: 800x500px, 10-15 seconds, showing a question → streaming answer → doctor animation -->
  
-![PediatricAI Demo](docs/demo.gif)
+[![PediatricAI Preview](https://img.youtube.com/vi/OTv25-CvAow/maxresdefault.jpg)](https://www.youtube.com/watch?v=OTv25-CvAow)
  
 **[➡️ Try the live app](https://d1c7nhfv15encr.cloudfront.net)**
  
