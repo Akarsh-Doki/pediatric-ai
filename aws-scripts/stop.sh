@@ -6,9 +6,9 @@
 #   cd ~/Desktop/pediatric-ai
 #   ./aws-scripts/stop.sh
 #
-# Takes ~30 seconds. Stops backend, deletes ALB, stops database.
+# Takes ~30 seconds. Deletes backend service, ALB, stops database.
 # Cost after: ~$0.50/month
-# To restart: ./aws-scripts/start.sh (5 minutes)
+# To restart: ./aws-scripts/start.sh (5-7 minutes)
 # For TRUE $0: ./aws-scripts/hibernate.sh
 # ============================================================================
 set -e
@@ -18,12 +18,13 @@ REGION="us-east-1"
 echo "=== Stopping PediatricAI ==="
 echo ""
 
-# 1. Scale ECS to 0
-echo "1/3  Stopping backend containers..."
-aws ecs update-service --cluster pediatricai --service pediatricai-backend --desired-count 0 --region $REGION > /dev/null 2>&1 || true
-echo "     Backend stopped."
+# 1. Delete ECS service (not just scale to 0 — avoids target group mismatch on restart)
+echo "1/3  Deleting backend service..."
+aws ecs delete-service --cluster pediatricai --service pediatricai-backend --force --region $REGION 2>/dev/null || true
+aws ecs delete-service --cluster pediatricai --service pediatricai-backend-v2 --force --region $REGION 2>/dev/null || true
+echo "     Backend service deleted."
 
-# 2. Delete ALB (biggest idle cost — ~$16/month)
+# 2. Delete ALB, listener, and target group
 echo "2/3  Removing load balancer..."
 ALB_ARN=$(aws elbv2 describe-load-balancers --names pediatricai-alb --query "LoadBalancers[0].LoadBalancerArn" --output text --region $REGION 2>/dev/null || echo "none")
 if [ "$ALB_ARN" != "none" ] && [ "$ALB_ARN" != "None" ]; then
@@ -48,6 +49,6 @@ echo ""
 echo "=== PediatricAI STOPPED ==="
 echo "Ongoing cost: ~\$0.50/month (Secrets Manager + RDS storage)"
 echo ""
-echo "To restart:        ./aws-scripts/start.sh (5 min)"
+echo "To restart:        ./aws-scripts/start.sh (5-7 min)"
 echo "For TRUE \$0/month: ./aws-scripts/hibernate.sh"
 echo "Check status:      ./aws-scripts/status.sh"
