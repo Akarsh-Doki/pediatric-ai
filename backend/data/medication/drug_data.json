@@ -1,0 +1,152 @@
+{
+  "_README": "Curated drug knowledge base for the deterministic medication-safety layer (backend/services/medication_safety.py). This is the OFFLINE source of truth for the demo: ingredient normalization, product->ingredient composition (to catch HIDDEN duplicate active ingredients, e.g. acetaminophen inside a cold combo), drug->class mapping (for allergy matching), allergy cross-reactivity, and a small pairwise interaction table. The medication_safety service can OPTIONALLY enrich this from RxNorm/RxNav (name normalization) and openFDA (label/interaction text) when network is available and results are cached \u2014 but the deterministic allergy / duplicate-ingredient / interaction checks never depend on a network call. openFDA interaction data is unstructured label prose, so a curated pairwise table is used as the reliable deterministic source. Pediatric portfolio/demo only; not validated for clinical use.",
+  "version": "1.0.0",
+  "ingredient_synonyms": {
+    "tylenol": "acetaminophen",
+    "paracetamol": "acetaminophen",
+    "apap": "acetaminophen",
+    "acetaminophen": "acetaminophen",
+    "motrin": "ibuprofen",
+    "advil": "ibuprofen",
+    "ibuprofen": "ibuprofen",
+    "nurofen": "ibuprofen",
+    "aleve": "naproxen",
+    "naproxen": "naproxen",
+    "aspirin": "aspirin",
+    "asa": "aspirin",
+    "acetylsalicylic acid": "aspirin",
+    "bayer": "aspirin",
+    "benadryl": "diphenhydramine",
+    "diphenhydramine": "diphenhydramine",
+    "zyrtec": "cetirizine",
+    "cetirizine": "cetirizine",
+    "claritin": "loratadine",
+    "loratadine": "loratadine",
+    "amoxil": "amoxicillin",
+    "amoxicillin": "amoxicillin",
+    "augmentin": "amoxicillin-clavulanate",
+    "keflex": "cephalexin",
+    "cephalexin": "cephalexin",
+    "zithromax": "azithromycin",
+    "azithromycin": "azithromycin",
+    "robitussin": "dextromethorphan",
+    "delsym": "dextromethorphan",
+    "dextromethorphan": "dextromethorphan",
+    "sudafed": "pseudoephedrine",
+    "pseudoephedrine": "pseudoephedrine",
+    "phenylephrine": "phenylephrine",
+    "warfarin": "warfarin",
+    "coumadin": "warfarin",
+    "prednisone": "prednisone",
+    "prednisolone": "prednisolone",
+    "albuterol": "albuterol",
+    "ventolin": "albuterol",
+    "guaifenesin": "guaifenesin"
+  },
+  "products": {
+    "tylenol": ["acetaminophen"],
+    "infants tylenol": ["acetaminophen"],
+    "childrens tylenol": ["acetaminophen"],
+    "tylenol cold": ["acetaminophen", "dextromethorphan", "phenylephrine"],
+    "tylenol cold and flu": ["acetaminophen", "dextromethorphan", "phenylephrine", "guaifenesin"],
+    "childrens tylenol cold and cough": ["acetaminophen", "dextromethorphan", "phenylephrine"],
+    "motrin": ["ibuprofen"],
+    "childrens motrin": ["ibuprofen"],
+    "advil": ["ibuprofen"],
+    "advil cold and sinus": ["ibuprofen", "pseudoephedrine"],
+    "robitussin": ["dextromethorphan", "guaifenesin"],
+    "robitussin dm": ["dextromethorphan", "guaifenesin"],
+    "dimetapp cold and cough": ["dextromethorphan", "phenylephrine", "brompheniramine"],
+    "benadryl": ["diphenhydramine"],
+    "augmentin": ["amoxicillin", "clavulanate"]
+  },
+  "drug_classes": {
+    "ibuprofen": ["nsaid"],
+    "naproxen": ["nsaid"],
+    "aspirin": ["nsaid", "salicylate"],
+    "acetaminophen": ["analgesic-antipyretic"],
+    "amoxicillin": ["penicillin", "beta-lactam", "antibiotic"],
+    "amoxicillin-clavulanate": ["penicillin", "beta-lactam", "antibiotic"],
+    "cephalexin": ["cephalosporin", "beta-lactam", "antibiotic"],
+    "azithromycin": ["macrolide", "antibiotic"],
+    "diphenhydramine": ["antihistamine-1st-gen", "anticholinergic"],
+    "cetirizine": ["antihistamine-2nd-gen"],
+    "loratadine": ["antihistamine-2nd-gen"],
+    "dextromethorphan": ["antitussive"],
+    "pseudoephedrine": ["decongestant", "sympathomimetic"],
+    "phenylephrine": ["decongestant", "sympathomimetic"],
+    "warfarin": ["anticoagulant"],
+    "prednisone": ["corticosteroid"],
+    "prednisolone": ["corticosteroid"],
+    "albuterol": ["beta-agonist", "bronchodilator"]
+  },
+  "allergy_terms": {
+    "penicillin": ["penicillin"],
+    "amoxicillin": ["amoxicillin", "penicillin"],
+    "nsaid": ["nsaid"],
+    "ibuprofen": ["ibuprofen", "nsaid"],
+    "aspirin": ["aspirin", "salicylate", "nsaid"],
+    "salicylate": ["salicylate"],
+    "sulfa": ["sulfonamide"],
+    "cephalosporin": ["cephalosporin"],
+    "acetaminophen": ["acetaminophen"],
+    "tylenol": ["acetaminophen"]
+  },
+  "allergy_cross_reactivity": [
+    {
+      "allergen_class": "penicillin",
+      "reacts_with_class": "cephalosporin",
+      "severity": "caution",
+      "note": "There is a small chance of cross-reaction between penicillins and cephalosporins. With a penicillin allergy, a cephalosporin should be given only on your pediatrician's advice."
+    }
+  ],
+  "pediatric_contraindications": {
+    "aspirin": {
+      "max_age_years_under": 18,
+      "severity": "contraindicated",
+      "reason": "Aspirin is linked to Reye's syndrome \u2014 a rare but life-threatening illness \u2014 when given to children or teenagers, especially during a viral illness. Do not give aspirin to a child for fever or pain unless a pediatric specialist has specifically prescribed it."
+    }
+  },
+  "interactions": [
+    {
+      "a": "ibuprofen", "b": "naproxen", "severity": "high",
+      "note": "Ibuprofen and naproxen are both NSAIDs. Taking them together gives no extra benefit and raises the risk of stomach bleeding and kidney problems. Use only one NSAID at a time."
+    },
+    {
+      "a": "ibuprofen", "b": "aspirin", "severity": "high",
+      "note": "Ibuprofen and aspirin are both NSAIDs; combining them increases the risk of stomach bleeding. (Aspirin should not be used in children regardless.)"
+    },
+    {
+      "a": "naproxen", "b": "aspirin", "severity": "high",
+      "note": "Naproxen and aspirin are both NSAIDs; combining them increases bleeding risk. (Aspirin should not be used in children regardless.)"
+    },
+    {
+      "a": "ibuprofen", "b": "warfarin", "severity": "high",
+      "note": "Ibuprofen (an NSAID) markedly increases the bleeding risk in someone taking the blood thinner warfarin. Do not combine without explicit medical direction."
+    },
+    {
+      "a": "naproxen", "b": "warfarin", "severity": "high",
+      "note": "Naproxen (an NSAID) increases the bleeding risk in someone taking warfarin. Do not combine without explicit medical direction."
+    },
+    {
+      "a": "aspirin", "b": "warfarin", "severity": "high",
+      "note": "Aspirin increases bleeding risk in someone taking warfarin."
+    },
+    {
+      "a": "acetaminophen", "b": "warfarin", "severity": "moderate",
+      "note": "Regular acetaminophen use can raise the INR (blood-thinning effect) in someone taking warfarin. Occasional use is usually fine, but mention regular use to the prescriber."
+    },
+    {
+      "a": "diphenhydramine", "b": "cetirizine", "severity": "moderate",
+      "note": "Diphenhydramine and cetirizine are both antihistamines. Using them together adds to drowsiness and side effects without added benefit."
+    },
+    {
+      "a": "diphenhydramine", "b": "loratadine", "severity": "moderate",
+      "note": "Diphenhydramine and loratadine are both antihistamines. Using them together adds side effects without added benefit."
+    },
+    {
+      "a": "pseudoephedrine", "b": "phenylephrine", "severity": "moderate",
+      "note": "Pseudoephedrine and phenylephrine are both decongestants. Combining them adds to heart-rate and blood-pressure effects without added benefit."
+    }
+  ]
+}

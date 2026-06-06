@@ -48,3 +48,4 @@ frontend/.env.production
 /tmp/cf-output.json
 *.pem
 .env.production.bak
+db/migrations

@@ -18,6 +18,46 @@ from backend.services.tts_service import synthesize_speech
 from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
 from backend.utils.symptoms import extract_symptoms
 from backend.services.clarification import detect_ambiguity
+from backend.services.medication_safety import scan_text_for_medications, check_medication
+
+
+# Severities we don't surface as a banner (a bare "couldn't verify" note is just noise).
+# Allergy/duplicate/interaction/contraindication/cross-reactivity all rank above this and ARE surfaced.
+_MED_NON_SURFACED_SEVERITIES = {"info"}
+
+
+def medication_warnings_for(texts: list, patient_info: dict) -> list:
+    """Deterministically screen every medication MENTIONED (user message) or RECOMMENDED
+    (assistant answer) against this patient's allergies, current meds, age, and conditions.
+    Runs in code (#1), so it can't silently miss a documented allergy the way prompt-only
+    context can. Does NOT touch refusal/emergency/urgency — it only attaches warnings for the
+    UI banner. Returns one dict per flagged medication; safe/unverifiable-only meds are omitted.
+    """
+    mentioned = []
+    for t in texts:
+        if not t:
+            continue
+        for name in scan_text_for_medications(t):
+            if name not in mentioned:
+                mentioned.append(name)
+
+    out = []
+    seen = set()
+    for name in mentioned:
+        result = check_medication(patient_info, name)
+        meaningful = [w for w in result.warnings
+                      if w["severity"] not in _MED_NON_SURFACED_SEVERITIES]
+        if not meaningful:
+            continue
+        key = tuple(result.ingredients) or (name,)
+        if key in seen:
+            continue
+        seen.add(key)
+        payload = result.to_dict()
+        payload["mentioned_as"] = name
+        payload["warnings"] = meaningful
+        out.append(payload)
+    return out
 
 
 def fix_broken_words(text: str) -> str:
@@ -117,7 +157,7 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
         return ChatResponse(
             answer=answer, audio_base64=audio_base64, citations=[],
             confidence_score=1.0, refused=False, latency_ms=elapsed_ms,
-            tokens_used=0, conversation_id=conversation.id, urgency="none",
+            tokens_used=0, conversation_id=conversation.id, urgency="none", medication_warnings=medication_warnings_for([body.message], patient_info),
         )
 
     # --- NORMAL RAG PIPELINE ---
@@ -208,7 +248,7 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
     return ChatResponse(
         answer=answer, audio_base64=audio_base64, citations=citations,
         confidence_score=confidence, refused=refused, latency_ms=elapsed_ms,
-        tokens_used=tokens_used, conversation_id=conversation.id, urgency=urgency,
+        tokens_used=tokens_used, conversation_id=conversation.id, urgency=urgency,medication_warnings=medication_warnings_for([body.message, answer], patient_info),
     )
 @router.post("/stream")
 @limiter.limit("15/hour")
@@ -281,7 +321,13 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
     ).order_by(Message.created_at).all()
     history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
 
+    # Deterministic safety scan on the user's message (#1), computed before any tokens
+    # so the UI can raise the banner immediately; independent of refusal.
+    user_med_warnings = medication_warnings_for([body.message], patient_info)
+
     async def event_generator():
+        if user_med_warnings:
+            yield {"event": "medication_warning", "data": json.dumps(user_med_warnings)}
         if refused:
             messages_for_llm = build_prompt(body.message, [], patient_info, history)
             full_answer = ""
@@ -306,7 +352,7 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
                 "conversation_id": str(conv_id),
                 "refused": False, "confidence_score": confidence,
                 "urgency": urgency, "citations": [],
-                "cleaned_answer": full_answer,
+                "cleaned_answer": full_answer, "medication_warnings": medication_warnings_for([body.message, full_answer], patient_info),
             })}
             return
 

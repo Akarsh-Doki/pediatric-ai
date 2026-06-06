@@ -89,6 +89,20 @@ CREATE TABLE events (
 
 CREATE INDEX idx_events_type_time ON events (event_type, created_at);
 
+-- Logged medication doses (#3: dose log + double-dose guard). Mirrors the SQLAlchemy Dose model.
+CREATE TABLE doses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    drug VARCHAR(100) NOT NULL,
+    amount_mg FLOAT,
+    given_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    note VARCHAR(500),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- The guard queries a patient's doses ordered by time, so index on both.
+CREATE INDEX idx_doses_patient_time ON doses (patient_id, given_at);
+
 -- Seed a demo patient
 INSERT INTO patients (name, age, sex, weight_kg, known_conditions, medications)
 VALUES (

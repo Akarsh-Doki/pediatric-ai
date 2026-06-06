@@ -52,6 +52,7 @@ class Patient(Base): # Makes patient table in PostgreSQL. Makes ID for each pati
     medications = Column(JSONB, default=[])
     created_at = Column(DateTime(timezone=True), default=utcnow)
     conversations = relationship("Conversation", back_populates="patient")
+    doses = relationship("Dose", back_populates="patient", order_by="Dose.given_at")
 
 
 class GuidelineDoc(Base): # Stores the metadata about each PDF in the corpus, where each row is a PDF. 
@@ -122,3 +123,14 @@ class Event(Base): # An analytics/logging table. Every query creates an event wi
     event_type = Column(String(50), nullable=False)
     payload = Column(JSONB, default={}) # stores whatever metrics are relevant for this event type
     created_at = Column(DateTime(timezone=True), default=utcnow)
+
+class Dose(Base):
+    __tablename__ = "doses"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    drug = Column(String(100), nullable=False)        # canonical ingredient, e.g. "acetaminophen"/"ibuprofen"
+    amount_mg = Column(Float, nullable=True)           # mg given; nullable so you can log "a dose" without exact mg
+    given_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)  # when it was given
+    note = Column(String(500), nullable=True)          # optional free text
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    patient = relationship("Patient", back_populates="doses")

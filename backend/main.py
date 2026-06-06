@@ -5,7 +5,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from backend.utils.logging_config import setup_logging
-from backend.routers import patients, documents, chat, tts, analytics
+from backend.routers import patients, documents, chat, tts, analytics, medication
 
 logger = setup_logging()
 
@@ -40,6 +40,7 @@ app.include_router(documents.router)
 app.include_router(chat.router)
 app.include_router(tts.router)
 app.include_router(analytics.router)
+app.include_router(medication.router)
 
 
 @app.get("/health")
