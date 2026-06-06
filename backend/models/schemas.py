@@ -119,24 +119,24 @@ class DoseCalcRequest(BaseModel):  # input to the dose calculator (#2); needs we
     age_years: Optional[float] = Field(None, ge=0, le=120)
     known_conditions: list[str] = []
 
-class DoseCalcResponse(BaseModel):  # ok=False means it refused (unsupported drug, no weight, age floor) — read `reasons`
+class DoseCalcResponse(BaseModel):  # mirrors dosing.DoseResult.to_dict(); ok=False = refused (read `reasons`)
     drug: str
     ok: bool
     status: str
-    display_name: str
-    single_dose_mg: float
-    single_dose_mg_range: list
-    single_dose_ml: float
-    concentration_label: str
-    interval_hours: Optional[int]
-    interval_display: str
-    max_doses_per_24h: Optional[int]
-    max_mg_per_24h: float
-    weight_kg: float
-    age_months: Optional[int]
-    reasons: list
-    warnings: list
-    disclaimer: str
+    display_name: Optional[str] = None
+    single_dose_mg: Optional[float] = None
+    single_dose_mg_range: Optional[list] = None
+    single_dose_ml: Optional[float] = None
+    concentration_label: Optional[str] = None
+    interval_hours: Optional[int] = None
+    interval_display: Optional[str] = None
+    max_doses_per_24h: Optional[int] = None
+    max_mg_per_24h: Optional[float] = None
+    weight_kg: Optional[float] = None
+    age_months: Optional[int] = None
+    reasons: list = []
+    warnings: list = []
+    disclaimer: str = ""
 
 class MedSafetyRequest(BaseModel):  # input to the safety layer (#1); nothing here goes to the LLM
     drug: str = Field(..., min_length=1, max_length=200)
