@@ -19,7 +19,10 @@ from backend.services.evaluation import should_refuse, compute_confidence, is_lo
 from backend.utils.symptoms import extract_symptoms
 from backend.services.clarification import detect_ambiguity
 from backend.services.medication_safety import scan_text_for_medications, check_medication
-
+from backend.services.dosing import compute_dose
+from backend.services.dose_intent import (
+    parse_dose_request, format_dose_answer, need_weight_message, format_safety_block,
+)
 
 # Severities we don't surface as a banner (a bare "couldn't verify" note is just noise).
 # Allergy/duplicate/interaction/contraindication/cross-reactivity all rank above this and ARE surfaced.
@@ -281,6 +284,54 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
 
     conv_id = conversation.id
     patient_id_val = patient.id
+
+    # If the parent is asking HOW MUCH of a known OTC antipyretic to give, answer from
+    # compute_dose (code) instead of the model, so the milligrams are never guessed.
+    # Precedence: (1) allergy/contraindication vetoes the dose, (2) no weight -> ask,
+    # (3) otherwise compute and format the real numbers.
+    dose_req = parse_dose_request(body.message, patient_info)
+    if dose_req:
+        dose_med_warnings = medication_warnings_for([body.message], patient_info)
+        blocking = [p for p in dose_med_warnings if p.get("blocked")]
+        if blocking:
+            dose_answer = format_safety_block(blocking)
+        elif dose_req["weight_kg"] is None:
+            dose_answer = need_weight_message(dose_req["drug"])
+        else:
+            dose_result = compute_dose(
+                dose_req["drug"],
+                weight_kg=dose_req["weight_kg"],
+                age_months=dose_req["age_months"],
+                age_years=dose_req["age_years"],
+                known_conditions=dose_req["known_conditions"],
+            )
+            dose_answer = format_dose_answer(dose_result, patient.name)
+            cautions = [w["message"] for p in dose_med_warnings if not p.get("blocked")
+                        for w in p.get("warnings", [])]
+            if cautions and dose_result.ok:
+                dose_answer = " ".join(cautions) + " " + dose_answer
+
+        db.add(Message(
+            conversation_id=conv_id, role="assistant", content=dose_answer,
+            citations=[], confidence_score=1.0, refused=False,
+        ))
+        db.commit()
+
+        async def dose_generator():
+            if dose_med_warnings:
+                yield {"event": "medication_warning", "data": json.dumps(dose_med_warnings)}
+            words = dose_answer.split(" ")
+            for i, w in enumerate(words):
+                yield {"event": "token", "data": (w if i == 0 else " " + w)}
+            yield {"event": "done", "data": json.dumps({
+                "conversation_id": str(conv_id),
+                "refused": False, "confidence_score": 1.0, "urgency": "none",
+                "citations": [], "cleaned_answer": dose_answer,
+                "medication_warnings": dose_med_warnings,
+            })}
+
+        return EventSourceResponse(dose_generator())
+    # ------------------------------------------------------------------------------
 
     # --- AMBIGUITY CHECK (before retrieval) ---
     ambiguity = detect_ambiguity(body.message)

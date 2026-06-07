@@ -50,9 +50,24 @@ else
 fi
 
 # 3. Delete RDS entirely (saves storage cost too)
-echo "3/5  Deleting database..."
-aws rds delete-db-instance --db-instance-identifier pediatricai-db --skip-final-snapshot --delete-automated-backups --region $REGION 2>/dev/null || true
-echo "     Database deletion started."
+echo "3/5  Snapshotting + deleting database..."
+DB_EXISTS=$(aws rds describe-db-instances --db-instance-identifier pediatricai-db --query "DBInstances[0].DBInstanceStatus" --output text --region $REGION 2>/dev/null || echo "none")
+if [ "$DB_EXISTS" != "none" ] && [ "$DB_EXISTS" != "None" ]; then
+  SNAP_ID="pediatricai-db-hibernate-$(date +%Y%m%d-%H%M%S)"
+  # --final-db-snapshot-identifier takes the snapshot AS the instance is deleted.
+  aws rds delete-db-instance --db-instance-identifier pediatricai-db \
+    --final-db-snapshot-identifier "$SNAP_ID" --delete-automated-backups \
+    --region $REGION 2>/dev/null || true
+  echo "     Snapshot '$SNAP_ID' creating; deletion started."
+  # Prune OLDER hibernate snapshots so they don't pile up (keep only this one).
+  for OLD in $(aws rds describe-db-snapshots --snapshot-type manual \
+        --query "DBSnapshots[?starts_with(DBSnapshotIdentifier,'pediatricai-db-hibernate-') && DBSnapshotIdentifier!='$SNAP_ID'].DBSnapshotIdentifier" \
+        --output text --region $REGION 2>/dev/null || true); do
+    aws rds delete-db-snapshot --db-snapshot-identifier "$OLD" --region $REGION >/dev/null 2>&1 || true
+  done
+else
+  echo "     Database already deleted; leaving existing snapshot intact."
+fi
 
 # 4. Delete secrets from AWS
 echo "4/5  Deleting secrets from AWS..."
