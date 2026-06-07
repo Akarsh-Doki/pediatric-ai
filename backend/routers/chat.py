@@ -24,6 +24,7 @@ from backend.services.dose_intent import (
     parse_dose_request, format_dose_answer, need_weight_message, format_safety_block,
 )
 
+
 # Severities we don't surface as a banner (a bare "couldn't verify" note is just noise).
 # Allergy/duplicate/interaction/contraindication/cross-reactivity all rank above this and ARE surfaced.
 _MED_NON_SURFACED_SEVERITIES = {"info"}
