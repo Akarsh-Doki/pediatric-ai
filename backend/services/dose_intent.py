@@ -1,5 +1,5 @@
 """
-backend/services/dose_intent.py
+backend/services/dose_intent.py  --  TIER 1 #2 bridge (chat -> dose calculator).
 
 Detects when a chat message is asking *how much* of a known OTC antipyretic to give,
 pulls out the drug + weight + age, and hands off to the deterministic dosing engine.
@@ -34,8 +34,8 @@ _INTENT_RE = re.compile(
     re.I,
 )
 
-_WEIGHT_LB_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:lb|lbs|pound|pounds)\b", re.I)
-_WEIGHT_KG_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:kg|kgs|kilo|kilos|kilogram|kilograms)\b", re.I)
+_WEIGHT_LB_RE = re.compile(r"(\d+(?:\.\d+)?)[-\s]*(?:lb|lbs|pound|pounds)\b", re.I)
+_WEIGHT_KG_RE = re.compile(r"(\d+(?:\.\d+)?)[-\s]*(?:kg|kgs|kilo|kilos|kilogram|kilograms)\b", re.I)
 _AGE_MONTH_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:month|months|mo|mos|mth|mths)\b", re.I)
 _AGE_HYPHEN_RE = re.compile(r"(\d+(?:\.\d+)?)[- ]year[- ]old", re.I)
 _AGE_YEAR_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:year|years|yr|yrs|yo|y/o|y\.o\.)\b", re.I)
@@ -106,6 +106,54 @@ def need_weight_message(drug: str) -> str:
         f"Pediatric dosing is based on weight, not age, so I need the weight "
         f"(in pounds or kilograms) before I can give you a safe number."
     )
+
+
+# Sentinel the resume logic looks for to know the assistant just asked for a weight.
+_WEIGHT_ASK_SENTINEL = "what does your child weigh"
+
+
+def resume_dose_request(message: str, last_assistant_text: Optional[str],
+                        prior_user_texts: list, patient_info: Optional[dict]) -> Optional[dict]:
+    """If the assistant's previous turn asked for a weight and THIS message supplies one,
+    rebuild the dose request using the drug/age recovered from earlier in the conversation.
+    A bare number with no unit is read as pounds (US pediatric default); the answer restates
+    the weight in kg so the parent can catch a misread."""
+    if not last_assistant_text or _WEIGHT_ASK_SENTINEL not in last_assistant_text.lower():
+        return None
+
+    weight_kg = _find_weight_kg(message)
+    if weight_kg is None:
+        m = re.match(r"^\s*(\d+(?:\.\d+)?)\s*$", message)   # bare number -> assume pounds
+        if m:
+            weight_kg = round(lb_to_kg(float(m.group(1))), 2)
+    if weight_kg is None:
+        return None
+
+    drug = None
+    for t in reversed(prior_user_texts or []):
+        drug = _find_drug(t)
+        if drug:
+            break
+    if not drug:
+        return None
+
+    info = patient_info or {}
+    age_months = age_years = None
+    for t in reversed(prior_user_texts or []):
+        am, ay = _find_age(t)
+        if am or ay:
+            age_months, age_years = am, ay
+            break
+    if age_months is None and age_years is None and info.get("age") is not None:
+        age_years = float(info["age"])
+
+    return {
+        "drug": drug,
+        "weight_kg": weight_kg,
+        "age_months": age_months,
+        "age_years": age_years,
+        "known_conditions": info.get("known_conditions") or [],
+    }
 
 
 def format_dose_answer(r: DoseResult, child_name: Optional[str] = None) -> str:

@@ -21,7 +21,7 @@ from backend.services.clarification import detect_ambiguity
 from backend.services.medication_safety import scan_text_for_medications, check_medication
 from backend.services.dosing import compute_dose
 from backend.services.dose_intent import (
-    parse_dose_request, format_dose_answer, need_weight_message, format_safety_block,
+    parse_dose_request, resume_dose_request, format_dose_answer, need_weight_message, format_safety_block,
 )
 
 
@@ -291,6 +291,13 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
     # Precedence: (1) allergy/contraindication vetoes the dose, (2) no weight -> ask,
     # (3) otherwise compute and format the real numbers.
     dose_req = parse_dose_request(body.message, patient_info)
+    if dose_req is None and re.search(r"\d", body.message) and len(body.message) < 40:
+        # The user may be answering an earlier "what does your child weigh?" prompt with
+        # just a number. Recover the pending drug/age from the conversation and resume.
+        _msgs = db.query(Message).filter(Message.conversation_id == conv_id).order_by(Message.created_at).all()
+        _last_assistant = next((m.content for m in reversed(_msgs) if m.role == "assistant"), None)
+        _prior_user = [m.content for m in _msgs if m.role == "user" and m.content != body.message]
+        dose_req = resume_dose_request(body.message, _last_assistant, _prior_user, patient_info)
     if dose_req:
         dose_med_warnings = medication_warnings_for([body.message], patient_info)
         blocking = [p for p in dose_med_warnings if p.get("blocked")]
