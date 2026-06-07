@@ -75,7 +75,7 @@ export function useChat() {
                 refused: meta.refused,
                 urgency: meta.urgency,
                 citations: meta.citations || [],
-                speakText: voiceEnabled ? (meta.cleaned_answer || fullAnswer) : null,  // Signal to App.jsx to speak
+                speakText: voiceEnabled ? (meta.cleaned_answer || fullAnswer) : null,
               });
 
               setMessages(prev => {

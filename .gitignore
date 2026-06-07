@@ -49,3 +49,4 @@ frontend/.env.production
 *.pem
 .env.production.bak
 db/migrations
+run_tier1_tests.py
