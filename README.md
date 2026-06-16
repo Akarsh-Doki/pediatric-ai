@@ -61,6 +61,28 @@ Doctor answers with citations, animated face, and voice
 ```
  
 ---
+### Request workflow
+
+```mermaid
+flowchart TD
+  Q(["Parent asks a question"]) --> AMB{"Is the question too vague?"}
+  AMB -->|yes| CLARIFY(["Ask a targeted follow up question, then stop"])
+  AMB -->|no| EMBED["Embed the question into a 384 dimensional vector"]
+  EMBED --> RETR["Search for the top matching medical chunks"]
+  RETR -. reads .-> DB[("RDS PostgreSQL + pgvector: 274 chunks")]
+  RETR --> CONF{"Confidence score: 0.6 best + 0.4 average"}
+  CONF -->|below 0.45| REFUSE["Refuse politely and refer to a pediatrician"]
+  CONF -->|0.45 to 0.55| FALL["Add a general knowledge fallback"]
+  CONF -->|0.55 or higher| GROUND["Ground the answer in the retrieved chunks"]
+  FALL --> LLM["GPT-4o-mini generates the response"]
+  GROUND --> LLM
+  REFUSE --> STREAM(["Stream tokens to the UI via SSE"])
+  LLM --> STREAM
+  STREAM --> DOC(["Doctor animates and reads the answer aloud"])
+```
+
+### Infrastructure path
+---
 
 ## Features
  
