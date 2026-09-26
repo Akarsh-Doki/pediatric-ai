@@ -1,21 +1,3 @@
-"""
-Hybrid (keyword + vector) retrieval  (TIER 3, feature #7 — optional upgrade).
-
-The production retriever (backend/services/retrieval.py) is dense-only: it ranks chunks
-purely by embedding cosine similarity. Dense retrieval can miss queries that hinge on a
-rare exact token (a specific drug name, a dosage unit, a proper noun) where lexical
-overlap is the stronger signal. This module adds a sparse TF-IDF lexical score and
-fuses it with the dense score, then reorders — a cheap, no-download alternative to a
-cross-encoder reranker (which would require fetching model weights).
-
-Design
-------
-* The fusion math (normalization + weighted combine) is PURE and unit-tested.
-* `tfidf_scores` uses scikit-learn (already a project dependency — no network/download).
-* `hybrid_rerank` takes the candidate chunks the dense retriever already returned
-  (each carrying its vector `similarity`) and re-scores them; it does not re-query the DB.
-  run_eval.py compares dense-only vs. hybrid on the labeled test set to show the lift.
-"""
 from __future__ import annotations
 
 from typing import Sequence

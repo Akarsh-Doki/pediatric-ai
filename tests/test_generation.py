@@ -26,7 +26,7 @@ class TestBuildPrompt:
         messages = build_prompt("fever question", mock_chunks_high, mock_patient_info)
         system_content = messages[0]["content"]
         assert "Fever Guide" in system_content
-        assert "Source 1" in system_content
+        assert "[S1]" in system_content
 
     def test_no_chunks_message(self, mock_patient_info):
         messages = build_prompt("random question", [], mock_patient_info)

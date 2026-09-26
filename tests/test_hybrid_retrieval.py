@@ -5,7 +5,7 @@ intended behavior — a lexically-exact match that dense retrieval under-ranked 
 promoted. Uses scikit-learn (a project dependency), so it runs offline with no download.
 Self-contained for both repo pytest and the offline runner.
 """
-from eval.hybrid_retrieval import (
+from backend.services.hybrid_retrieval import (
     min_max_normalize, combine_scores, tfidf_scores, hybrid_rerank,
 )
 

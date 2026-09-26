@@ -5,14 +5,16 @@ logger = logging.getLogger("pediatricai")
 settings = get_settings()
 
 
-def should_refuse(chunks: list[dict]) -> bool: # If retrieval returned zero chunks 
-    """Only refuse if truly nothing relevant was found."""
+def should_refuse(chunks: list[dict], threshold: float = None) -> bool: # If retrieval returned zero chunks
+    """Refuse if no chunk reaches the similarity cutoff. Uses the same cutoff as retrieval
+    (settings.similarity_threshold), so there is one number to tune, not two."""
+    if threshold is None:
+        threshold = settings.similarity_threshold
     if not chunks:
         return True
-    # Check if ANY chunk is above a minimum threshold (lower than the confidence threshold)
     best_sim = max(c.get("similarity", 0) for c in chunks)
-    if best_sim < 0.45:
-        logger.info(f"Refusing: best similarity {best_sim:.3f} below minimum 0.45")
+    if best_sim < threshold:
+        logger.info(f"Refusing: best similarity {best_sim:.3f} below cutoff {threshold}")
         return True
     return False
 

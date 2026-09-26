@@ -23,7 +23,8 @@ class Settings(BaseSettings):
 
     # RAG
     retrieval_top_k: int = 10
-    similarity_threshold: float = 0.55
+    similarity_threshold: float = 0.40
+    retrieval_mode: str = "hybrid"  # "hybrid" (vector + TF-IDF rerank) or "dense"
     min_chunks_for_answer: int = 2
     chunk_size: int = 600
     chunk_overlap: int = 100

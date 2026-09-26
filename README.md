@@ -49,7 +49,7 @@ ECS Fargate — runs FastAPI in Docker (serverless)
   ↓  1. Check if the question is too vague
   ↓  2. Convert question to 384-dim vector
   ↓  3. Search pgvector for matching medical chunks
-  ↓  4. Score confidence: refuse / fallback / answer
+  ↓  4. No chunk ≥ 0.40 similarity? Fixed "no verified source" reply, no LLM call
   ↓  5. Send chunks + question to GPT-4o-mini
   ↓  6. Stream response tokens back via SSE
   ↓
@@ -68,14 +68,12 @@ flowchart TD
   Q(["Parent asks a question"]) --> AMB{"Is the question too vague?"}
   AMB -->|yes| CLARIFY(["Ask a targeted follow up question, then stop"])
   AMB -->|no| EMBED["Embed the question into a 384 dimensional vector"]
-  EMBED --> RETR["Search for the top matching medical chunks"]
+  EMBED --> RETR["Hybrid search: top 20 vector matches, reranked with keyword (TF-IDF) score"]
   RETR -. reads .-> DB[("RDS PostgreSQL + pgvector: 274 chunks")]
-  RETR --> CONF{"Confidence score: 0.6 best + 0.4 average"}
-  CONF -->|below 0.45| REFUSE["Refuse politely and refer to a pediatrician"]
-  CONF -->|0.45 to 0.55| FALL["Add a general knowledge fallback"]
-  CONF -->|0.55 or higher| GROUND["Ground the answer in the retrieved chunks"]
-  FALL --> LLM["GPT-4o-mini generates the response"]
-  GROUND --> LLM
+  RETR --> CONF{"Any chunk with similarity 0.40 or higher?"}
+  CONF -->|no| REFUSE["Fixed reply: no verified source, ask your pediatrician (no LLM call)"]
+  CONF -->|yes| GROUND["Answer only from the retrieved chunks, citing each claim"]
+  GROUND --> LLM["GPT-4o-mini generates the response"]
   REFUSE --> STREAM(["Stream tokens to the UI via SSE"])
   LLM --> STREAM
   STREAM --> DOC(["Doctor animates and reads the answer aloud"])
@@ -90,7 +88,7 @@ flowchart TD
 - **12 medical PDFs** ingested into 274 chunks with 100-token overlap
 - **Sentence embeddings** using all-MiniLM-L6-v2 (384 dimensions)
 - **pgvector cosine similarity** search with configurable thresholds
-- **Confidence bands**: 0.55+ = high confidence, 0.45-0.55 = general knowledge fallback, <0.45 = refusal
+- **Source-only answers**: the model answers only from retrieved chunks, cites them as [S1], [S2]…, and says when its sources don't cover a question. No chunk at 0.40+ similarity → a fixed "no verified source" reply without calling the LLM. Tuned with the eval in `eval/` (see `eval/IMPROVEMENT_LOG.md`)
 - **Citations** showing which medical source supported each answer
 ### Safety & Intelligence
 - **Ambiguity detection** — catches vague queries ("my child is sick") before wasting compute on bad embeddings, asks targeted follow-up questions
@@ -140,12 +138,9 @@ When a parent asks a question, here's what happens in ~3 seconds:
  
 **3. Embedding** — The question is converted into a 384-dimensional vector using SentenceTransformers (all-MiniLM-L6-v2). This captures semantic meaning — "burning up" maps close to "fever" in vector space.
  
-**4. Retrieval** — pgvector performs cosine similarity search across 274 medical chunks. Returns the top 5 most relevant chunks with similarity scores.
+**4. Retrieval** — pgvector finds the 20 closest of 278 medical chunks with similarity ≥ 0.40, then a TF-IDF keyword score is fused with the vector score (60/40) and the top 10 are kept (hybrid search).
  
-**5. Confidence scoring** — A weighted formula (0.6 × best_score + 0.4 × average_score) determines response confidence:
-  - **≥ 0.55**: High confidence — answer grounded in medical corpus
-  - **0.45–0.55**: Moderate — supplement with general knowledge
-  - **< 0.45**: Low — refuse gracefully with referral to pediatrician
+**5. Source gate** — If no chunk reaches 0.40, the app returns a fixed "I don't have a verified source for that, please ask your pediatrician" without calling the LLM, so it can't answer from general knowledge. (The 0.6 × best + 0.4 × average confidence score is still computed and stored.)
 **6. Prompt assembly** — System prompt + patient info (name, age, conditions) + retrieved chunks + conversation history (last 6 messages) + user question → sent to GPT-4o-mini.
  
 **7. Streaming generation** — GPT-4o-mini streams tokens via SSE. Each token appears in the chat immediately. The doctor face animates its mouth during streaming.
@@ -160,7 +155,7 @@ When a parent asks a question, here's what happens in ~3 seconds:
  
 | Module | Tests | What it covers |
 |--------|-------|---------------|
-| `test_evaluation.py` | 14 | Refusal thresholds, confidence formula, boundary cases at 0.45 |
+| `test_evaluation.py` | 15 | Refusal cutoff (uses the retrieval setting), confidence formula, boundary cases |
 | `test_clarification.py` | 16 | Specific queries pass through, vague queries caught, greetings handled |
 | `test_symptoms.py` | 13 | Keyword extraction accuracy, severity classification |
 | `test_generation.py` | 12 | Prompt assembly, patient info inclusion, history limits, urgency detection |
@@ -289,7 +284,7 @@ pediatric-ai/
 │           ├── CitationPanel.jsx  # Source references
 │           └── Sidebar.jsx        # Patient selection, settings
 ├── tests/
-│   ├── test_evaluation.py         # 14 tests: thresholds, confidence
+│   ├── test_evaluation.py         # 15 tests: cutoff, confidence
 │   ├── test_clarification.py      # 16 tests: ambiguity detection
 │   ├── test_symptoms.py           # 13 tests: keyword extraction
 │   └── test_generation.py         # 12 tests: prompt assembly
@@ -311,7 +306,7 @@ pediatric-ai/
 | pgvector vs Pinecone/Weaviate | pgvector | No additional service to manage. Lives in the same PostgreSQL as patient data. |
 | Browser TTS vs cloud TTS | Browser | Free, instant, no API latency. Works offline. |
 | ECS Fargate vs EC2 | Fargate | No servers to patch. Scales to zero when not in use. |
-| Confidence bands vs binary | Bands | Gradual degradation instead of hard refuse. 0.45-0.55 uses general knowledge as fallback. |
+| Source-only vs general-knowledge fallback | Source-only | The first eval showed the fallback made 100% of out-of-scope answers unsupported. Answering only from sources with one 0.40 cutoff raised correct answers from 65% to 82% (`eval/IMPROVEMENT_LOG.md`). |
  
 ---
  

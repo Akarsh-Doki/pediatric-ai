@@ -22,9 +22,10 @@ def search_chunks( # The main retrieval function
     query_embedding = embed_text(query) # Encodes the parent's question into the same 384-dimensional vector space as the stored chunks. 
 
     filters = [] # This builds dynamic SQL filters
+    hybrid = settings.retrieval_mode == "hybrid"
     params = {
         "embedding": str(query_embedding),
-        "top_k": top_k,
+        "top_k": top_k * 2 if hybrid else top_k,  # hybrid reranks a wider candidate pool
         "threshold": settings.similarity_threshold,
     }
 
@@ -66,6 +67,10 @@ def search_chunks( # The main retrieval function
                 "doc_source": row.doc_source,
                 "similarity": sim,
             })
+
+    if hybrid and chunks:
+        from backend.services.hybrid_retrieval import hybrid_rerank
+        chunks = hybrid_rerank(query, chunks, alpha=0.6, top_k=top_k)
 
     logger.info(f"Retrieved {len(chunks)} chunks above threshold")
     return chunks

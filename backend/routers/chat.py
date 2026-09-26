@@ -13,7 +13,9 @@ from slowapi.util import get_remote_address
 from backend.models.database import get_db, Patient, Conversation, Message, SymptomExtraction, Event
 from backend.models.schemas import ChatRequest, ChatResponse, CitationItem
 from backend.services.retrieval import search_chunks
-from backend.services.generation import build_prompt, generate_response, generate_response_stream, assess_urgency
+from backend.services.generation import (
+    NO_SOURCE_MESSAGE, build_prompt, generate_response, generate_response_stream, assess_urgency,
+)
 from backend.services.tts_service import synthesize_speech
 from backend.services.evaluation import should_refuse, compute_confidence, is_low_confidence
 from backend.utils.symptoms import extract_symptoms
@@ -182,21 +184,13 @@ async def chat_query(request: Request, body: ChatRequest, db: Session = Depends(
     confidence = compute_confidence(chunks)
 
     if refused:
-        history_msgs = db.query(Message).filter(
-            Message.conversation_id == conversation.id
-        ).order_by(Message.created_at).all()
-        history = [{"role": m.role, "content": m.content} for m in history_msgs[:-1]]
-
-        messages = build_prompt(body.message, [], patient_info, history)
-        result = await generate_response(messages)
-
-        answer = result["answer"]
-        answer = fix_broken_words(answer)
-        tokens_used = result["tokens_used"]
-        urgency = assess_urgency(answer, chunks)
+        # No verified source: reply with a fixed message instead of letting the LLM answer
+        # from general knowledge.
+        answer = NO_SOURCE_MESSAGE
+        tokens_used = 0
+        urgency = "none"
         citations = []
-        refused = False
-        confidence = 0.3
+        confidence = 0.0
     else:
         history_msgs = db.query(Message).filter(
             Message.conversation_id == conversation.id
@@ -388,28 +382,22 @@ async def chat_stream(request: Request, body: ChatRequest, db: Session = Depends
         if user_med_warnings:
             yield {"event": "medication_warning", "data": json.dumps(user_med_warnings)}
         if refused:
-            messages_for_llm = build_prompt(body.message, [], patient_info, history)
-            full_answer = ""
-            async for token in generate_response_stream(messages_for_llm):
-                full_answer += token
-                yield {"event": "token", "data": token}
+            # No verified source: fixed reply, no LLM call (same as /chat/query).
+            full_answer = NO_SOURCE_MESSAGE
+            confidence = 0.0
+            urgency = "none"
+            yield {"event": "token", "data": full_answer}
 
-            full_answer = fix_broken_words(full_answer)
-            confidence = 0.3
-            urgency = assess_urgency(full_answer, [])
-
-            from backend.services.generation import fix_output_text
-            full_answer = fix_output_text(full_answer)
             assistant_msg = Message(
                 conversation_id=conv_id, role="assistant", content=full_answer,
-                citations=[], confidence_score=confidence, refused=False,
+                citations=[], confidence_score=confidence, refused=True,
             )
             db.add(assistant_msg)
             db.commit()
 
             yield {"event": "done", "data": json.dumps({
                 "conversation_id": str(conv_id),
-                "refused": False, "confidence_score": confidence,
+                "refused": True, "confidence_score": confidence,
                 "urgency": urgency, "citations": [],
                 "cleaned_answer": full_answer, "medication_warnings": medication_warnings_for([body.message, full_answer], patient_info),
             })}

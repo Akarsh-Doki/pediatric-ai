@@ -1,0 +1,788 @@
+hand_check_id,question_id,question,in_scope,reference_answer,source_excerpts,answer,your_verdict,your_notes
+H01,Q15,When is my child supposed to get the MMR vaccine?,yes,"MMR is routinely given as a 2-dose series, the first dose at 12–15 months and the second at 4–6 years.","[cdc-child-adolescent-immunization-schedule-2025.pdf#17]
+Notes
+Ages 18 Years or Younger, United States, 2025
+Recommended Child and Adolescent Immunization Schedule for
+Influenza vaccination Measles, mumps, and rubella vaccination Meningococcal serogroup A,C,W,Y vaccination
+(minimum age: 6 months [IIV3], 2 years [LAIV3],18 (minimum age: 12 months for routine vaccination) (minimum age: 2 months [MenACWY-CRM, Menveo],
+years [recombinant influenza vaccine, RIV3]) 2 years [MenACWY-TT, MenQuadfi]),
+Routine vaccination
+10 years [MenACWY-TT/MenB-FHbp, Penbraya])
+Routine vaccination
+2-dose series at age 12–15 months, age 4–6 years
+y
+Routine vaccination
+Use any influenza vaccine appropriate for age and health
+y
+Catch-up vaccination
+status annually:
+2-dose series at age 11–12 years; 16 years
+y
+Unvaccinated children and adolescents: 2-dose series at
+y
+Age 6 months–8 years who have received fewer than
+-
+Catch-up vaccination
+least 4 weeks apart*
+2 influenza vaccine doses before July 1, 2024, or whose
+Special situations Age 13–15 years: 1 dose now and booster at age 16–18 years
+y
+influenza vaccination history is unknown: 2 doses, separated
+(minimum interval: 8 weeks)
+International travel
+by at least 4 weeks. Administer dose 2 even if the child turns y
+9 years between receipt of dose 1 and dose 2. Age 16–18 years: 1 dose
+y
+- Infants age 6–11 months: 1 dose before departure;
+Age 6 months–8 years revaccinate with 2-dose series at age 12–15 months
+- who have received at least
+Special situations
+2 influenza vaccine doses before July 1, 2024: 1 dose. (12 months for children in high-risk areas) and dose 2 as
+Anatomic or functional asplenia (including sickle cell
+early as 4 weeks later.*
+Age 9 years or older:
+- 1 dose
+disease), HIV infection, persistent complement
+- Children age 12 months or older:
+- Age 18 years solid organ transplant recipients receiving
+component deficiency, complement inhibitor
+immunosuppressive medications: Unvaccinated: 2-dose series (separated by at least
+high-dose inactivated (e.g., eculizumab, ravulizumab) use:
+
+(HD-IIV3) and adjuvanted inactivated (aIIV3) influenza 4 weeks*) before departure
+Menveo*
+y
+vaccines are acceptable options. No preference over other
+Previously received 1 dose: administer dose 2 at least
+
+Dose 1 at age 2 months: 4-dose series (additional 3 doses
+-
+age-appropriate IIV3 or RIV3.","Your child is supposed to receive the MMR (Measles, Mumps, Rubella) vaccine in a 2-dose series, with the first dose given at 12 to 15 months of age and the second dose at 4 to 6 years of age [S3]. If you have any further questions or concerns, please ask your pediatrician.",,
+H02,Q04,My baby's newborn jaundice still hasn't gone away and she's over two weeks old. What does the guideline say to do?,yes,"If jaundice continues beyond two weeks of age, the young infant should be referred to a hospital for further assessment.","[who-imci-chart-booklet.pdf#77]
+GIVE FOLLOW-UP CARE FOR THE YOUNG INFANT
+JAUNDICE
+After 1 day:
+Look for jaundice. Are palms and soles yellow? Treatment:
+If palms and soles are yellow, refer to hospital. If palms and soles are not yellow, but jaundice has not decreased, advise the mother home care and ask her to return for follow up in 1 day. If jaundice has started decreasing, reassure the mother and ask her to continue home care. Ask her to return for follow up at 2 weeks of age. If jaundice continues beyond two weeks of age, refer
+the young infant to a hospital for further assessment. FEEDING PROBLEM
+After 2 days:
+Reassess feeding. > See ""Then Check for Feeding Problem or Low Weight"". Ask about any feeding problems found on the initial visit. Counsel the mother about any new or continuing feeding problems. If you counsel the mother to make significant
+changes in feeding, ask her to bring the young infant back again. If the young infant is low weight for age, ask the mother to return 14 days of this follow up visit. Continue follow-up until the infant is gaining weight well. Exception:
+If you do not think that feeding will improve, or if the young infant has weight, refer the child. lost
+LOW WEIGHT FOR AGE
+After 14 days:
+Weigh the young infant and determine if the infant is still low weight for age. Reassess feeding. > See ""Then Check for Feeding Problem or Low Weight"". If the infant is age, praise the mother and encourage her to continue. no longer low weight for
+If the infant is well, praise the mother. Ask her to have her infant weighed again within 14 days or when she returns for immunization, whichever is the
+still low weight for age, but is feeding
+earlier. If the infant is problem, counsel the mother about the feeding problem. Ask the mother to return again in 14 days (or when she returns for
+still low weight for age and still has a feeding
+immunization, if this is within 14 days). Continue to see the young infant every few weeks until the infant is feeding well and gaining weight regularly and is no longer low weight for age. Exception:
+If you do not think that feeding will improve, or if the young infant has weight, refer to hospital. lost
+ජ
+3DJH RI
+
+[who-imci-chart-booklet.pdf#64]
+CHECK FOR JAUNDICE
+If jaundice present, ASK: LOOK AND FEEL:
+Any jaundice if age less Pink:
+Treat to prevent low blood sugar
+When did the jaundice Look for jaundice (yellow
+than 24 hours or
+SEVERE JAUNDICE Refer URGENTLY to hospital
+appear first? eyes or skin)
+Yellow palms and soles at
+Advise mother how to keep the infant warm CLASSIFY
+JAUNDICE
+Look at the young infant's
+any age
+on the way to the hospital
+palms and soles. Are they
+Jaundice appearing after 24 Yellow: Advise the mother to give home care for the
+yellow? hours of age and young infant
+JAUNDICE
+Palms and soles not yellow Advise mother to return immediately if palms and
+soles appear yellow. If the young infant is older than 14 days, refer to a
+hospital for assessment
+Follow-up in 1 day
+No jaundice Green: Advise the mother to give home care for the
+young infant
+NO JAUNDICE
+THEN ASK: Does the young infant have diarrhoea*? IF YES, LOOK AND FEEL:
+Two of the following signs: If infant has no other severe classification:
+Pink:
+Look at the young infant's general condition:
+Movement only when Give fluid for severe dehydration (Plan C)
+SEVERE
+Infant's movements stimulated or no movement OR
+DEHYDRATION Classify
+for
+Does the infant move on his/her own? at all
+If infant also has another severe DIARRHOEA
+DEHYDRATION
+Does the infant not move even when stimulated but Sunken eyes classification:
+Refer URGENTLY to hospital with
+then stops? Skin pinch goes back very
+mother giving frequent sips of ORSon
+Does the infant not move at all? slowly. the way
+Is the infant restless and irritable? Advise the mother to continue
+Look for sunken eyes. breastfeeding
+Pinch the skin of the abdomen. Does it go back:
+Two of the following signs:
+Yellow: Give fluid and breast milk for some dehydration
+Very slowly (longer than 2 seconds)? Restless and irritable (Plan B)
+SOME
+or slowly? Sunken eyes
+DEHYDRATION If infant has any severe classification:
+Skin pinch goes back Refer URGENTLY to hospital with
+slowly. mother giving frequent sips of ORSon
+the way
+Advise the mother to continue
+breastfeeding
+Advise mother when to return immediately
+Follow-up in 2 days if not improving
+Not enough signs to classify
+Green: Give fluids to treat diarrhoea at home and
+as some or severe
+continue breastfeeding (Plan A)
+NO DEHYDRATION
+dehydration. Advise mother when to return immediately
+Follow-up in 2 days if not improving
+* What is diarrhoea in a young infant? A young infant has diarrhoea if the stools have changed from usual pattern and are many and watery (more water than faecal matter). The normally frequent or semi-solid stools of a breastfed baby are not diarrhoea. 3DJH RI","If your baby is over two weeks old and jaundice has not resolved, you should refer her to a hospital for further assessment [S1]. It's important to follow up with your pediatrician for the best care.",,
+H03,Q36,"How long is the liquid amoxicillin from the pharmacy good for, and does it need to go in the fridge?",yes,The mixed liquid amoxicillin must be kept refrigerated and thrown out after 14 days.,"[pediatric-medications-reference.pdf#6]
+mono)
+• If the child develops hives, difficulty breathing, or swelling of the face, lips, or throat, stop the medication
+and seek emergency care immediately
+• Amoxicillin can reduce the effectiveness of oral contraceptives (relevant for adolescents)
+• Inform the doctor of all medications the child is taking
+Common Side Effects
+• Diarrhea (most common, due to disruption of normal gut bacteria)
+• Nausea, vomiting, or stomach pain
+• Diaper rash or yeast infection (thrush) due to disruption of normal flora
+• Skin rash (non-allergic amoxicillin rash is common, especially with viral infections)
+• Contact the doctor if side effects are severe or if a rash with hives or swelling develops
+Probiotics During Antibiotic Use
+Some pediatricians recommend giving a probiotic (such as Culturelle Kids or Florastor Kids) during and for a
+week after antibiotic treatment to help restore healthy gut bacteria and reduce diarrhea. Give the probiotic at
+least 2 hours apart from the antibiotic dose. Ask your pediatrician if this is appropriate. Storage
+• Reconstituted liquid suspension must be refrigerated and discarded after 14 days
+• Capsules and tablets stored at room temperature away from moisture and heat
+• Return unused or expired antibiotics to a pharmacy for proper disposal. Do not flush or put in household
+trash
+Source: FDA DailyMed Amoxicillin Label, MedlinePlus/NIH, AAP Antibiotic Guidelines",Reconstituted liquid amoxicillin must be refrigerated and should be discarded after 14 days [S1].,,
+H04,Q32,The school nurse found lice on my kid. Does she have to be sent home right away?,yes,"No. The AAP and CDC don't recommend no-nit policies; a child with lice can finish the school day, start treatment that evening, and return after the first treatment.","[pediatric-medical-reference.pdf#26]
+Common Myths
+• Myth: Lice can jump or fly. Fact: lice can only crawl. They spread through direct head-to-head contact
+• Myth: Lice prefer dirty hair. Fact: lice actually prefer clean hair because it is easier to attach to
+• Myth: You need to deep clean the whole house. Fact: lice die within 1 to 2 days without a human host. Focus on items that contacted the head in the past 48 hours
+• Myth: Nits on hair shafts far from the scalp are a current infestation. Fact: nits more than a quarter inch
+from the scalp are likely already hatched or dead
+School Policies
+The AAP and CDC do not recommend no-nit policies (keeping children out of school until all nits are removed). Children with active lice can finish the school day and start treatment at home that evening. They can return to
+school after the first treatment. The goal is to minimize disruption to the child's education while managing the
+infestation effectively. Source: MedlinePlus/NIH, CDC Head Lice Information, AAP Head Lice Guidelines","No, your child does not have to be sent home right away. Children with active lice can finish the school day and start treatment at home that evening. They can return to school after the first treatment [S1].",,
+H05,Q29,My son has croup with a barking cough. What signs mean I should call 911 right away?,yes,"Call 911 if the child has blue or gray lips or fingertips, is struggling to breathe, cannot speak or cry because of breathing difficulty, or is drooling and unable to swallow.","[pediatric-medical-reference.pdf#5]
+3. Croup
+What Is Croup
+Croup is a common childhood illness that causes swelling of the voice box (larynx), windpipe (trachea), and
+bronchial tubes (bronchi). It causes a distinctive barking cough that sounds like a seal. Croup is most common
+in children aged 6 months to 3 years, with peak incidence around age 2. It most often occurs in fall and winter. Croup is usually caused by a viral infection, most commonly parainfluenza virus. Other viruses including RSV,
+influenza, and adenovirus can also cause croup. Symptoms
+• A harsh, barking cough (the hallmark symptom, often described as sounding like a seal)
+• Stridor: a high-pitched, squeaky, or whistling sound when breathing in (inspiratory stridor)
+• Hoarse or raspy voice
+• Fever, usually low-grade but can be higher
+• Runny nose and cold-like symptoms (often precede the cough by 1 to 2 days)
+• Symptoms typically worsen at night and with crying or agitation
+• Symptoms usually peak on the second or third night and resolve within a week
+Severity Levels
+Mild croup: occasional barking cough, no stridor at rest, no significant breathing difficulty. Moderate croup:
+frequent barking cough, stridor at rest, mild chest retractions (skin pulling in between ribs or at the neck). Severe croup: significant stridor at rest, marked retractions, agitation, decreased air entry, possible cyanosis
+(blue coloring). Severe croup requires emergency care. Treatment and Home Care
+• Keep the child calm and comfortable. Crying and agitation worsen symptoms significantly
+• Cool mist: take the child outside into cool night air for 10 to 15 minutes, or sit in a bathroom with cool mist
+from the shower. Cool moist air can help reduce airway swelling
+• Steam: sit in a closed bathroom with a hot shower running to create steam. This can help some children,
+though evidence is mixed
+• Keep the child upright or propped up to ease breathing
+• Offer warm clear fluids to soothe the throat and keep the child hydrated
+• Acetaminophen or ibuprofen for fever and discomfort
+• For moderate to severe croup, a doctor may prescribe oral dexamethasone (a steroid) to reduce airway
+swelling. A single dose often provides dramatic improvement
+• In emergency settings, nebulized epinephrine may be given for severe symptoms. This provides rapid but
+temporary relief
+When to Go to the ER
+Call 911 immediately if the child has blue or gray lips or fingertips, is struggling to breathe, cannot speak or
+I
+cry due to breathing difficulty, or is drooling and unable to swallow
+• Stridor that is getting louder or does not stop at rest","Call 911 immediately if your child has blue or gray lips or fingertips, is struggling to breathe, cannot speak or cry due to breathing difficulty, or is drooling and unable to swallow. Additionally, if stridor is getting louder or does not stop at rest, seek emergency care right away [S1].",,
+H06,Q18,I tested negative for hepatitis B. When is it suggested my baby get the first hep B shot?,yes,"For parents deciding whether to give HepB to infants born to mothers who tested negative for hepatitis B, the suggestion is to give the first dose no earlier than 2 months of age.","[cdc-immunization-schedule.pdf#1]
+3/24/26, 11:46 PM Recommended Vaccinations for Children | Vaccines & Immunizations | CDC
+Birth 1 mo 2 mos 4 mos 6 mos 7 mos 8 mos 12 mos 15 mos 18 mos 19 m
+Dengue4
+2, 3, or ACWY5
+Meningococcal
+B6
+Meningococcal
+(HepA)7
+Hepatitis A
+1
+All children whose mother did not have the vaccine should get one dose. 2
+High-risk children, such as those with chronic lung disease, should receive a second dose at ages 8 to 19 months. 3
+Vaccination recommended for infants born to women who tested positive for the hepatitis B virus or whose status is unknown. 4
+Recommended ONLY if living in areas with endemic dengue AND with a laboratory confirmation of previous dengue infection. 5
+For high-risk groups (e.g., those with anatomic or functional asplenia or HIV infection), those traveling to countries with hyperendemic or epidemic meningococcal disease, and first-
+year college students living in residential housing, vaccination is recommended. 6
+Recommended for high-risk groups, e.g., with anatomic or functional asplenia, and during outbreaks. 7
+Vaccination recommended for international travel to areas with high or intermediate hepatitis A endemicity. Immunizations Based on Shared Clinical Decision-Making
+Birth 1 mo 2 mos 4 mos 6 mos 7 mos 8 mos 12
+1st dose 2nd dose 3rd dose
+Rotavirus (RV): RV1 (2-dose series), RV5 (3-dose series)
+2fi
+COVID-19 (1vCOV-mRNA, 1vCOV-aPS)
+Influenza (IIV3, ccIIV3)
+OR
+Influenza (LAIV3)
+Hepatitis A (HepA)
+1st dose 2nd dose
+Hepatitis B (HepB)*
+Meningococcal ACWY
+Meningococcal B
+Some children should get this dose of vaccine at this age depending on their dose series
+* For parents deciding whether to vaccinate for HepB in infants born to women who tested negative for the hepatitis B virus, it is suggested that the initial dose is administered no
+earlier than 2 months of age. What diseases do these vaccines protect against? Vaccine-Preventable Disease Disease Complications
+Diphtheria Swelling of the heart muscle, heart failure, coma, paralysis, death
+Illness caused by a toxin produced by bacteria that infects the nose, throat, and
+sometimes skin.",It is suggested that the initial dose of the hepatitis B vaccine is administered no earlier than 2 months of age for infants born to mothers who tested negative for the hepatitis B virus [S1]. Please consult your pediatrician for specific recommendations regarding your baby's vaccination schedule.,,
+H07,Q14,My 3-year-old has had wheezing episodes. Can she get the nasal spray flu vaccine?,yes,No. The live attenuated nasal spray flu vaccine (LAIV3/FluMist) is contraindicated for children age 2–4 years with a history of asthma or wheezing.,"[cdc-child-adolescent-immunization-schedule-2025.pdf#33]
+If using ccIIV3, administer in
+medical setting under supervision of health care provider who can recognize and
+manage severe allergic reactions. May consult an allergist. • Moderate or severe acute illness with or without fever
+Influenza, recombinant • Severe allergic reaction (e.g., anaphylaxis) to any RIV of any valency, or to any component3 of RIV3 • Guillain-Barré syndrome (GBS) within 6 weeks after a previous dose of any
+injectable (RIV3) type of influenza vaccine
+[Flublok] • Persons with a history of severe allergic reaction (e.g., anaphylaxis) after a previous
+dose of any egg-based IIV, ccIIV, or LAIV of any valency. If using RIV3, administer in
+medical setting under supervision of health care provider who can recognize and
+manage severe allergic reactions. May consult an allergist. • Moderate or severe acute illness with or without fever
+Influenza, live attenuated • Severe allergic reaction (e.g., anaphylaxis) after previous dose of any influenza vaccine • Guillain-Barré syndrome (GBS) within 6 weeks after a previous dose of any
+(LAIV3) (i.e., any egg-based IIV, ccIIV, RIV, or LAIV of any valency) type of influenza vaccine
+[Flumist] • Severe allergic reaction (e.g., anaphylaxis) to any vaccine component3 (excluding egg) • Asthma in persons age 5 years old or older
+• Children age 2–4 years with a history of asthma or wheezing • Persons with underlying medical conditions other than those listed under
+• Anatomic or functional asplenia contraindications that might predispose to complications after wild-type
+• Immunocompromised due to any cause including, but not limited to, medications and HIV infection influenza virus infection, e.g., chronic pulmonary, cardiovascular (except isolated
+• Close contacts or caregivers of severely immunosuppressed persons who require a protected environment hypertension), renal, hepatic, neurologic, hematologic, or metabolic disorders
+• Pregnancy (including diabetes mellitus)
+• Cochlear implant • Moderate or severe acute illness with or without fever
+• Active communication between the cerebrospinal fluid (CSF) and the oropharynx, nasopharynx, nose,
+ear or any other cranial CSF leak
+• Children and adolescents receiving aspirin or salicylate-containing medications
+• Received influenza antiviral medications oseltamivir or zanamivir within the previous 48 hours,
+peramivir within the previous 5 days, or baloxavir within the previous 17 days
+When a contraindication is present, a vaccine should NOT be administered.
+
+[cdc-child-adolescent-immunization-schedule-2025.pdf#8]
+Table 3
+Recommended Child and Adolescent Immunization Schedule by Medical Indication, United States, 2025
+Always use this table in conjunction with Table 1 and the Notes that follow. Medical conditions are often not mutually exclusive. If multiple conditions are present, refer to guidance in all relevant
+columns. See Notes for medical conditions not listed. Asplenia or
+HIV infection CD4
+Vaccine persistent Kidney failure,
+percentage and counta
+and other Immunocompromised CSF leak or complement End-stage
+immunizing (excluding HIV cochlear component Heart disease or renal disease Chronic liver <15% or ≥15% and
+agents Pregnancy infection) implant deficiencies chronic lung disease or on dialysis disease Diabetes <200/mm3 ≥200/mm3
+RSV-mAb
+1 dose depending on maternal 2nd RSV season for chronic 1 dose depending on maternal
+2nd RSV season
+(nirsevimab)
+RSV vaccination status (See Notes) lung disease (See Notes) RSV vaccination status (See Notes)
+Hepatitis B
+Rotavirus
+SCIDb
+DTaP
+DTaP/Tdap
+Tdap: 1 dose each pregnancy
+Hib See Notes See Notes
+HSCT: 3 doses
+Pneumococcal
+IPV
+Additional doses may be necessary
+COVID-19
+See Notes See Notes
+(See Notes)
+Influenza Solid organ transplant:
+inactivated 18yrs (See Notes)
+LAIV3
+Asthma, wheezing: 2–4 yearsc
+MMR *
+VAR *
+Hepatitis A
+HPV * 3-dose series (See Notes)
+MenACWY
+MenB
+Seasonal administration
+RSV (Abrysvo)
+(See Notes)
+Dengue
+Mpox See Notes
+ Recommended for all age-  Not recommended for all children,  Vaccination is based on  Additional doses may be necessary  Precaution: Might be  Contraindicated or not  No Guidance/
+eligible children who lack but recommended for some shared clinical decision- based on medical condition or indicated if benefit of recommended Not Applicable
+documentation of a complete children based on increased risk for making other indications. See Notes. protection outweighs *Vaccinate after pregnancy,
+or severe outcomes from disease risk of adverse reaction if indicated
+vaccination series
+a. For additional information regarding HIV laboratory parameters and use of live vaccines, see the General Best Practice Guidelines for Immunization,
+c. LAIV3 contraindicated for children 2–4 years of age with
+“Altered Immunocompetence,” at www.cdc.gov/vaccines/hcp/acip-recs/general-recs/immunocompetence.html and Table 4-1 (footnote J) at b. Severe Combined Immunodeficiency
+asthma or wheezing during the preceding 12 months
+www.cdc.gov/vaccines/hcp/acip-recs/general-recs/contraindications.html. Page 4",Your 3-year-old should not receive the nasal spray flu vaccine if she has a history of wheezing or asthma. The nasal spray vaccine is not recommended for children with these conditions. Please consult your pediatrician for further guidance and to discuss alternative vaccination options [S7].,,
+H08,Q70,At what age should my child have their first orthodontist visit?,no,,Out of scope: none of the 12 source documents cover this topic.,My sources don't cover that. I suggest asking your pediatrician for guidance on when to schedule your child's first orthodontist visit.,,
+H09,Q12,"How many DTaP shots does my baby need, and at what ages?",yes,"DTaP is a 5-dose series: a 3-dose primary series at 2, 4, and 6 months, then booster doses at 15–18 months and 4–6 years.","[cdc-child-adolescent-immunization-schedule-2025.pdf#10]
+www.cdc.gov/covidschedule. recommended minimum interval. For further details,
+see Table 3-2, Recommended and minimum ages and
+Administer an age-appropriate COVID-19 vaccine product for
+Diphtheria, tetanus, and pertussis (DTaP)
+intervals between vaccine doses, in General Best Practice
+each dose. There is no preferential recommendation for the use
+vaccination
+(minimum age: 6 weeks [4 years
+Guidelines for Immunization at www.cdc.gov/vaccines/hcp/
+of one COVID-19 vaccine over another when more than one
+for Kinrix or Quadracel])
+imz-best-practices/timing-spacing-immunobiologics.html. recommended age-appropriate vaccine is available. Information on travel vaccination requirements and
+y Routine vaccination
+recommendations is available at www.cdc.gov/travel/. 5-dose series (3-dose primary series at age 2, 4, and 6 months,
+y
+For vaccination of persons with immunodeficiencies, see followed by booster doses at ages 15–18 months and
+y
+4–6 years)
+Table 8-1, Vaccination of persons with primary and secondary
+immunodeficiencies, in General Best Practice Guidelines for
+- Prospectively: Dose 4 may be administered as early as age
+Immunization at www.cdc.gov/vaccines/hcp/acip-recs/ 12 months if at least 6 months have elapsed since dose 3. general-recs/immunocompetence.html, and Immunization in
+Retrospectively: A 4th dose that was inadvertently
+-
+Special Clinical Circumstances (In: Kimberlin DW, Barnett ED,
+administered as early as age 12 months may be counted if at
+Lynfield Ruth, Sawyer MH, eds. Red Book: 2021–2024 Report
+least 4 months have elapsed since dose 3. of the Committee on Infectious Diseases. 32nd ed. Itasca, IL:
+Catch-up vaccination
+American Academy of Pediatrics; 2021:72–86). Dose 5 is not necessary if dose 4 was administered at age
+y
+For information about vaccination in the setting of a vaccine-
+y 4 years or older and at least 6 months after dose 3. preventable disease outbreak, contact your
+For other catch-up guidance, see Table 2. y
+state or local health department. Special situations
+WHITE SPACE
+The National Vaccine Injury Compensation Program (VICP)
+y
+Children younger than age 7 years with a contraindication
+y
+INTENTIONALLY
+is a no-fault alternative to the traditional legal system for
+specific to the pertussis component of DTaP: May
+resolving vaccine injury claims. All vaccines included in
+administer Td for all recommended remaining doses in place LEFT BLANK
+the child and adolescent vaccine schedule are covered by
+of DTaP.","Your baby needs a total of 5 doses of the DTaP vaccine. The recommended schedule is as follows: the first dose at 2 months, the second dose at 4 months, the third dose at 6 months, the fourth dose between 15 to 18 months, and the fifth dose between 4 to 6 years of age [S9].",,
+H10,Q55,My daughter touched a hot pan and burned her fingers a little. What's the first thing I should do?,yes,"Cool the burn immediately by running cool (not ice cold) water over it for 10–20 minutes, which is the single most important first aid step. Do not apply ice, butter, oil, or toothpaste.","[common-injuries-first-aid.pdf#1]
+1. Burns in Children
+Burns are classified by depth. Children have thinner skin than adults, so burns can be more severe and deeper than
+they appear initially. Types of Burns
+• First-degree burn (superficial): Affects only the outer layer of skin (epidermis). Red, dry, painful, no blisters. Like a mild sunburn. Heals in 3–5 days without scarring. • Second-degree burn (partial thickness): Affects the epidermis and part of the dermis. Red, blistered, very
+painful, moist/weeping appearance. Heals in 2–3 weeks. May scar. Second-degree burns larger than 3 inches
+or on the face, hands, feet, groin, or over a joint need medical attention. • Third-degree burn (full thickness): Destroys the full thickness of skin. May appear white, brown, or charred. May be painless because nerve endings are destroyed. Always requires emergency medical care. Skin grafting
+may be needed. Common Causes in Children
+• Scalds from hot liquids (most common in children under 5) — hot coffee, tea, soup, bathwater, steam
+• Contact burns from touching hot surfaces — stoves, ovens, curling irons, space heaters, fireplaces
+• Flame burns from fire, candles, lighters, matches
+• Electrical burns from outlets, cords, appliances (always need medical evaluation even if skin looks fine)
+• Chemical burns from cleaning products, drain cleaners, battery acid
+• Sunburn from UV exposure
+First Aid for Minor Burns (First-Degree and Small Second-Degree)
+HOME CARE: Most minor burns can be treated at home. • Step 1 — Cool the burn immediately. Run cool (not ice cold) water over the burned area for 10–20 minutes. This is the single most important first aid step. Do this within the first few minutes for best results. • Step 2 — Remove clothing and jewelry from the burned area, unless stuck to the skin. If clothing is stuck,
+do not pull it off — cut around it. • Step 3 — Protect the burn. After cooling, cover loosely with a clean, non-stick bandage or sterile gauze. Do
+not wrap tightly. • Step 4 — Pain relief. Acetaminophen or ibuprofen (age-appropriate dosing) for pain. Cool compresses can
+also help. • Step 5 — Moisturize. Once cooled, apply pure aloe vera gel or a gentle moisturizer. After the first 24 hours,
+you can apply a thin layer of antibiotic ointment (like bacitracin) and re-cover with a non-stick bandage. Change
+the bandage daily. • Step 6 — Watch for infection. Signs of infection: increasing redness, swelling, warmth, pus or cloudy
+drainage, red streaks radiating from the burn, fever, or increasing pain after the first 24–48 hours.","Cool the burn immediately by running cool (not ice cold) water over the burned area for 10–20 minutes. This is the single most important first aid step. After cooling, remove any clothing or jewelry from the burned area, unless it is stuck to the skin. If it is stuck, do not pull it off—cut around it. Protect the burn by covering it loosely with a clean, non-stick bandage or sterile gauze. Watch for signs of infection, such as increasing redness, swelling, warmth, pus, or fever [S1][S2]. If the burn is larger than 3 inches or on the face, hands, feet, groin, or over a joint, seek medical attention [S2].",,
+H11,Q05,My child is being treated for severe malnutrition with RUTF and also looks pale. Should he also be given iron?,yes,"No. A child with severe acute malnutrition who is receiving RUTF should not be given iron, because RUTF already contains an adequate amount of iron.","[who-imci-chart-booklet.pdf#15]
+THEN CHECK FOR ANAEMIA
+Check for anaemia
+Severe palmar pallor Pink:
+Refer URGENTLY to hopsital
+Look for palmar pallor. Is it:
+SEVERE ANAEMIA
+Severe palmar pallor*? Classify
+Some pallor Yellow: Give iron**
+Classification
+Some palmar pallor? ANAEMIA
+Give mebendazole if child is 1 year or older and
+ANAEMIA
+arrow
+has not had a dose in the previous 6 months
+Advise mother when to return immediately
+Follow-up in 14 days
+No palmar pallor Green: If child is less than 2 years old, assess the
+child's feeding and counsel the mother according
+NO ANAEMIA
+to the feeding recommendations
+If feeding problem, follow-up in 5 days
+*Assess for sickle cell anaemia if common in your area. **If child has severe acute malnutrition and is receiving RUTF, DO NOT give iron because there is already adequate amount of iron in RUTF. 3DJH RI
+
+[who-imci-chart-booklet.pdf#26]
+TEACH THE MOTHER TO GIVE ORAL DRUGS AT HOME
+Follow the instructions below for every oral drug to be given at home. Also follow the instructions listed with each drug's dosage table. Give Iron*
+Give one dose daily for 14 days. IRON/FOLATE
+IRON SYRUP
+TABLET
+Ferrous sulfate
+AGE or WEIGHT
+PJ J Ferrous fumarate 100 mg per 5 ml (20 mg
+Folate (60 mg elemental iron per ml)
+elemental iron)
+2 months up to 4 months (4 -
+1.00 ml (< 1/4 tsp.)
+<6 kg)
+4 months up to 12 months
+1.25 ml (1/4 tsp.)
+(6 - <10 kg)
+12 months up to 3 years
+1/2 tablet 2.00 ml (<1/2 tsp.)
+(10 - <14 kg)
+3 years up to 5 years (14 -
+1/2 tablet 2.5 ml (1/2 tsp.)
+19 kg)
+* Children with severe acute malnutrition who are receiving ready-to-use therapeutic food (RUTF) should
+not be given Iron. 3DJH RI","If your child has severe palmar pallor, you should refer them urgently to the hospital. If there is some pallor, you can give iron. However, if your child is receiving ready-to-use therapeutic food (RUTF) for severe acute malnutrition, do not give iron, as there is already an adequate amount of iron in RUTF [S1][S2]. 
+
+Please consult your pediatrician for further guidance.",,
+H12,Q79,How many strep throat infections does a child need before a tonsillectomy is recommended?,no,,Out of scope: none of the 12 source documents cover this topic.,My sources don't cover that. I suggest asking your pediatrician for guidance on tonsillectomy recommendations related to strep throat infections.,,
+H13,Q72,My baby boy was diagnosed with hypospadias. When is surgery usually done?,no,,Out of scope: none of the 12 source documents cover this topic.,My sources don't cover that. I suggest asking your pediatrician for specific information regarding the timing of surgery for hypospadias.,,
+H14,Q28,How many ear infections does a kid need to have before ear tubes become an option?,yes,"Ear tube surgery may help children with three or more ear infections in six months or four or more in a year, or with persistent fluid that affects hearing.","[pediatric-medical-reference.pdf#4]
+• If antibiotics do not improve symptoms within 48 to 72 hours, contact the provider as a different antibiotic
+may be needed
+Home Care
+• Apply a warm, moist washcloth over the affected ear for 10 to 15 minutes to ease pain
+• Keep the child's head elevated during rest
+• Encourage swallowing by offering fluids, which can help the Eustachian tube drain
+• Do not insert anything into the ear canal
+• If prescribed ear drops, warm the bottle in your hands first for comfort
+Ear Tubes
+Children who have frequent ear infections (three or more in six months, or four or more in a year) or persistent
+fluid that affects hearing may benefit from ear tube surgery (myringotomy). A surgeon places tiny tubes through
+the eardrums to allow air flow and fluid drainage. The tubes usually stay in place for 6 to 18 months and fall out
+on their own. The procedure is one of the most common childhood surgeries and typically takes about 15
+minutes. When to See a Doctor
+• Any infant under 6 months with suspected ear infection
+• Ear pain lasting more than 2 days
+• Fever above 102.2 F with ear symptoms
+• Pus or bloody discharge from the ear
+• Symptoms that worsen or do not improve within 48 to 72 hours
+• Hearing concerns after infection resolves
+• Swelling, redness, or pain behind the ear (possible mastoiditis, a serious complication)
+Prevention
+• Keep immunizations current, including pneumococcal and flu vaccines
+• Breastfeed for at least 6 months if possible, as breast milk contains antibodies
+• Do not prop bottles or allow infants to drink lying flat
+• Keep children away from secondhand smoke
+• Practice good hand hygiene and reduce exposure to sick children
+Source: MedlinePlus/NIH, NIDCD, CDC Ear Infection Guidelines, AAP Otitis Media Guidelines","Children who have frequent ear infections (three or more in six months, or four or more in a year) or persistent fluid that affects hearing may benefit from ear tube surgery (myringotomy) [S1]. My sources don't cover the specifics of the procedure or any additional details. Please consult your pediatrician for more information.",,
+H15,Q30,My daughter just started antibiotics for strep throat. When can she go back to school?,yes,Children stop being contagious after 12 to 24 hours of antibiotics and can return to school or daycare after at least 12 hours on antibiotics and no fever.,"[pediatric-medical-reference.pdf#12]
+6. Strep Throat
+What Is Strep Throat
+Strep throat is a bacterial infection of the throat and tonsils caused by Group A Streptococcus (GAS) bacteria. It
+is most common in children ages 5 to 15 but can occur at any age. Strep throat is uncommon in children under
+3 years. It spreads through respiratory droplets when an infected person coughs or sneezes, and through
+shared food or drinks. Strep throat is different from a viral sore throat, which is more common and does not
+require antibiotics. Symptoms
+Strep throat symptoms usually appear 2 to 5 days after exposure and come on suddenly. • Severe sore throat that comes on quickly (not gradual like a cold)
+• Pain and difficulty swallowing
+• Fever, often 101 F or higher
+• Red, swollen tonsils, sometimes with white patches or streaks of pus
+• Tiny red spots (petechiae) on the roof of the mouth
+• Swollen, tender lymph nodes in the front of the neck
+• Headache, stomachache, nausea, or vomiting (especially in younger children)
+• Body aches and general feeling of being unwell
+• Sometimes a fine, red, sandpaper-like rash (scarlet fever)
+Symptoms that suggest a viral sore throat rather than strep include: cough, runny nose, hoarseness,
+conjunctivitis (pink eye), and diarrhea. Strep throat typically does NOT cause cough or runny nose. Diagnosis
+Strep throat cannot be diagnosed by looking at the throat alone. A rapid strep test or throat culture is needed. The rapid test takes about 5 to 10 minutes. If the rapid test is negative but the doctor still suspects strep, a
+throat culture may be sent to a lab (results in 1 to 2 days). Testing is important because strep requires antibiotic
+treatment to prevent complications. Treatment
+• Antibiotics are essential for strep throat. Penicillin or amoxicillin are the most commonly prescribed. For
+penicillin-allergic patients, alternatives include azithromycin, cephalexin, or clindamycin
+• The full course of antibiotics (usually 10 days) must be completed even if symptoms improve, to fully
+eliminate the bacteria and prevent complications
+• Children are no longer contagious after 12 to 24 hours of antibiotic treatment and can return to school or
+daycare after at least 12 hours on antibiotics and no fever
+• Pain and fever management: acetaminophen or ibuprofen
+• Warm liquids like broth, warm water with honey (children over 1 year), or warm tea can soothe the throat
+• Cold foods like popsicles and ice chips can also help with pain
+• Gargling with warm salt water (older children who can gargle without swallowing)
+• Rest and adequate hydration","Your daughter can return to school or daycare after at least 12 hours on antibiotics and no fever [S1]. Make sure she completes the full course of antibiotics as prescribed. If you have any concerns, please consult your pediatrician.",,
+H16,Q65,What are the symptoms of celiac disease in children?,no,,Out of scope: none of the 12 source documents cover this topic.,My sources don't cover that. I suggest asking your pediatrician for more information on celiac disease symptoms in children.,,
+H17,Q69,Is it safe to give melatonin to my 6-year-old to help her sleep?,no,,Out of scope: none of the 12 source documents cover this topic.,My sources don't cover that. I suggest asking your pediatrician for guidance on melatonin use for your child.,,
+H18,Q78,Should my 1-year-old be tested for lead poisoning?,no,,Out of scope: none of the 12 source documents cover this topic.,My sources don't cover that. I suggest asking your pediatrician for guidance on lead poisoning testing for your 1-year-old.,,
+H19,Q13,I got a Tdap shot during my last pregnancy. Do I need another one now that I'm pregnant again?,yes,"Yes. One dose of Tdap is recommended during each pregnancy, preferably early in gestational weeks 27–36.","[cdc-child-adolescent-immunization-schedule-2025.pdf#29]
+Notes
+Ages 18 Years or Younger, United States, 2025
+Recommended Child and Adolescent Immunization Schedule for
+Respiratory syncytial virus vaccination Tetanus, diphtheria, and pertussis (Tdap) Varicella vaccination
+(RSV [Abrysvo]) vaccination (minimum age: 11 years for routine (minimum age: 12 months)
+vaccination, 7 years for catch-up vaccination)
+Routine vaccination Routine vaccination
+Routine vaccination
+Pregnant at 32 weeks 0 days through 36 weeks and 6 days 2-dose series at age 12–15 months, 4–6 years
+y y
+gestation from September through January in most of the
+Age 11–12 years: 1 dose Tdap (adolescent booster) Dose 2 may be administered as early as 3 months after dose
+y -
+continental United States*: 1 dose Abrysvo. Administer RSV
+1 (a dose inadvertently administered after at least 4 weeks
+Pregnancy: 1 dose Tdap during each pregnancy, preferably in
+y
+vaccine regardless of previous RSV infection. may be counted as valid). early part of gestational weeks 27–36
+- Either maternal RSV vaccination with Abrysvo or infant
+Catch-up vaccination
+Note: Tdap may be administered regardless of the interval
+immunization with nirsevimab (RSV monoclonal antibody) is
+Ensure persons age 7–18 years without evidence of immunity
+since the last tetanus- and diphtheria-toxoid-containing y
+recommended to prevent severe respiratory syncytial virus
+vaccine. (see MMWR at www.cdc.gov/mmwr/pdf/rr/rr5604.pdf) have a
+disease in infants. 2-dose series:
+Catch-up vaccination
+All other pregnant women:
+RSV vaccine not recommended
+y
+Age 7–12 years:
+- Routine interval: 3 months (a dose
+Age 13–18 years who have not received Tdap:
+y
+Subsequent pregnancies: additional doses not
+y inadvertently administered after at least 4 weeks may be
+1 dose Tdap (adolescent booster)
+recommended. No data are available to inform whether
+counted as valid)
+additional doses are needed in subsequent pregnancies. Age 7–18 years not fully vaccinated* with DTaP: 1 dose
+y
+Age 13 years and older: Routine interval: 4–8 weeks
+-
+Infants born to pregnant women who received RSV vaccine Tdap as part of the catch-up series (preferably the first dose);
+(minimum interval: 4 weeks)
+during a previous pregnancy should receive nirsevimab. if additional doses are needed, use Td or Tdap.
+
+[cdc-child-adolescent-immunization-schedule-2025.pdf#8]
+Table 3
+Recommended Child and Adolescent Immunization Schedule by Medical Indication, United States, 2025
+Always use this table in conjunction with Table 1 and the Notes that follow. Medical conditions are often not mutually exclusive. If multiple conditions are present, refer to guidance in all relevant
+columns. See Notes for medical conditions not listed. Asplenia or
+HIV infection CD4
+Vaccine persistent Kidney failure,
+percentage and counta
+and other Immunocompromised CSF leak or complement End-stage
+immunizing (excluding HIV cochlear component Heart disease or renal disease Chronic liver <15% or ≥15% and
+agents Pregnancy infection) implant deficiencies chronic lung disease or on dialysis disease Diabetes <200/mm3 ≥200/mm3
+RSV-mAb
+1 dose depending on maternal 2nd RSV season for chronic 1 dose depending on maternal
+2nd RSV season
+(nirsevimab)
+RSV vaccination status (See Notes) lung disease (See Notes) RSV vaccination status (See Notes)
+Hepatitis B
+Rotavirus
+SCIDb
+DTaP
+DTaP/Tdap
+Tdap: 1 dose each pregnancy
+Hib See Notes See Notes
+HSCT: 3 doses
+Pneumococcal
+IPV
+Additional doses may be necessary
+COVID-19
+See Notes See Notes
+(See Notes)
+Influenza Solid organ transplant:
+inactivated 18yrs (See Notes)
+LAIV3
+Asthma, wheezing: 2–4 yearsc
+MMR *
+VAR *
+Hepatitis A
+HPV * 3-dose series (See Notes)
+MenACWY
+MenB
+Seasonal administration
+RSV (Abrysvo)
+(See Notes)
+Dengue
+Mpox See Notes
+ Recommended for all age-  Not recommended for all children,  Vaccination is based on  Additional doses may be necessary  Precaution: Might be  Contraindicated or not  No Guidance/
+eligible children who lack but recommended for some shared clinical decision- based on medical condition or indicated if benefit of recommended Not Applicable
+documentation of a complete children based on increased risk for making other indications. See Notes. protection outweighs *Vaccinate after pregnancy,
+or severe outcomes from disease risk of adverse reaction if indicated
+vaccination series
+a. For additional information regarding HIV laboratory parameters and use of live vaccines, see the General Best Practice Guidelines for Immunization,
+c. LAIV3 contraindicated for children 2–4 years of age with
+“Altered Immunocompetence,” at www.cdc.gov/vaccines/hcp/acip-recs/general-recs/immunocompetence.html and Table 4-1 (footnote J) at b. Severe Combined Immunodeficiency
+asthma or wheezing during the preceding 12 months
+www.cdc.gov/vaccines/hcp/acip-recs/general-recs/contraindications.html. Page 4","Additional doses of Tdap are not recommended for subsequent pregnancies if you have already received it during a previous pregnancy. However, it is important to consult your healthcare provider for personalized advice. My sources don't cover that, so please ask your pediatrician for more information.",,
+H20,Q46,How many days can pumped breast milk stay in the fridge?,yes,"Freshly expressed breast milk can be kept in the refrigerator for up to 4 days at 40°F (4°C) or lower, stored in the back rather than the door.","[children-health-guide.pdf#11]
+• Duration: Allow the baby to feed until they release on their own, then offer the other breast. Feedings
+typically last 10–20 minutes per side. • Signs the baby is getting enough: 6+ wet diapers per day by day 4, 3–4 stools per day in the first
+month, steady weight gain, baby seems satisfied after feeding. • Growth spurts: Babies cluster feed (feed more frequently) during growth spurts, typically around 2–3
+weeks, 6 weeks, 3 months, and 6 months. This is temporary and helps increase milk supply. Common Breastfeeding Challenges
+• Sore nipples: Most common in the first week. Usually caused by a poor latch. Correct the latch, apply
+expressed breast milk to nipples after feeding, allow them to air-dry. Lanolin cream can help. Persistent
+pain beyond 1–2 weeks or cracked/bleeding nipples warrants evaluation. • Engorgement: Breasts become overly full, hard, and painful (usually days 3–5 when milk comes in). Feed frequently, apply warm compresses before feeding, cold compresses after, hand express a small
+amount if needed to soften the breast for latch. • Mastitis: A breast infection causing localized redness, warmth, swelling, pain, and often fever/flu-like
+symptoms. Continue breastfeeding (it will not harm the baby). Contact your doctor, as antibiotics may
+be needed. • Low milk supply concerns: True low supply is rare. The best way to increase supply is to feed more
+frequently and ensure good latch. Adequate hydration and nutrition for the mother are important. Pumping after feedings can also stimulate additional production. • Thrush: A yeast infection that can affect the baby's mouth (white patches on tongue, inner cheeks)
+and the mother's nipples (pink, flaky, itchy, burning pain). Both mother and baby need treatment —
+contact your pediatrician. Pumping and Storing Breast Milk
+• Room temperature: Freshly expressed milk is safe for up to 4 hours at room temperature (up to 77°F
+/ 25°C)
+• Refrigerator: Up to 4 days at 40°F (4°C) or lower. Store in the back, not the door. • Freezer: Up to 6 months is optimal; up to 12 months is acceptable. Use freezer-safe breast milk
+storage bags. • Thawing: Thaw in the refrigerator overnight, or hold under warm running water. Never microwave
+breast milk (creates hot spots, destroys nutrients). Use thawed milk within 24 hours. Never refreeze
+thawed milk. Source: AAP, HealthyChildren.org — Breastfeeding Basics; CDC Breast Milk Storage Guidelines","Pumped breast milk can be stored in the refrigerator for up to 4 days at 40°F (4°C) or lower. Store it in the back of the refrigerator, not in the door [S1].",,
+H21,Q42,When can my child go back to daycare after having a fever?,yes,Keep your child home until they feel better and have had no fever for 24 hours without using fever medicine.,"[fever-guide.pdf#2]
+Fever, continued
+It may take 60 to 90 minutes for these medicines to work. • Check with your child’s doctor or pharmacist before giving acetaminophen or ibuprofen with other
+medicines. This includes over-the-counter medicines like cough and cold medicines. Tell the doctor if your child is taking any vitamins, herbal products, other supplements or home
+•
+remedies. When can my child return to daycare or school? Keep your child home until they:
+Feel better. •
+Have no fever without using medicines for 24 hours. •
+When should I call the doctor? right away if your child has any of these:
+Call your child’s doctor
+Does not smile or play for even a few minutes every 4 hours
+•
+Shows signs of dehydration:
+•
+No urine in 6 hours in a baby younger than 12 months old
+−
+No urine in more than 8 hours in a child older than 12 months old
+−
+No tears when crying
+−
+Sunken eyes
+−
+Dry lips and mouth
+−
+Vomits (throws up) more than 2 times
+•
+Is not comfortable, even when held
+•
+Seems to be breathing hard or fast even after the fever has been treated with medicine
+•
+Has a new rash not yet seen by a doctor
+•
+Has fever that lasts more than 3 days
+•
+Has any continued pain, such as earache, pain with urinating or stomach pain
+•
+Has a stiff neck
+•
+Has a headache that does not get better with medicine, such as acetaminophen or ibuprofen
+•
+For a baby younger than 3 months old has a fever of 100.4°F (38°C) or higher rectally and has not
+•
+–
+been checked by a doctor yet for the fever. For a baby 3 to 24 months old has a fever of 102.5F (39.2C) or higher rectally and has not been
+• –
+checked by a doctor yet for the fever. Also call if you have any questions or concerns about how your child looks or feels. This teaching sheet contains general information only. Talk with
+your child’s doctor or
+a member of your child’s healthcare team about specific care of your child. In case of an urgent concern or emergency, call 911 or go to the nearest emergency department right away. Outpatient / PFEN 029 / 11.24 ©2024 Page 3 of 3
+Children’s Healthcare of Atlanta, Inc. All rights reserved.","Your child can return to daycare once they feel better and have no fever without using medicines for 24 hours [S1]. If you have any concerns, please consult your pediatrician.",,
+H22,Q45,"How long should my baby sleep in our bedroom, and is it okay to just have them sleep in our bed with us?",yes,"Room sharing (crib or bassinet in the parents' room within arm's reach) is recommended for at least the first 6 months, ideally the first year. Bed sharing is not recommended because it increases the risk of SIDS, suffocation, and entrapment.","[children-health-guide.pdf#7]
+3. Sleep Safety and SIDS Prevention
+Sudden Infant Death Syndrome (SIDS) is the unexplained death of a baby younger than 1 year, usually
+occurring during sleep. While the exact cause is unknown, research has identified several evidence-based
+practices that dramatically reduce the risk. The ABCs of Safe Sleep
+A = Alone, B = Back, C = Crib — This is the foundation of safe infant sleep. Back to Sleep
+• Always place babies on their BACK for every sleep — naps and nighttime. This single practice has
+reduced SIDS deaths by over 50% since the 1990s. • Back sleeping is recommended until age 1, even after the baby can roll over on their own. Place them
+on their back; if they roll to their stomach independently, you do not need to reposition them. • Side sleeping is NOT safe and is NOT recommended. Babies placed on their sides can easily roll onto
+their stomachs. Safe Sleep Surface
+• Use a firm, flat mattress in a safety-approved crib, bassinet, or play yard. The mattress should be
+covered with only a fitted sheet. • Nothing else in the crib: No blankets, pillows, bumper pads, stuffed animals, positioners, wedges, or
+loose bedding. These are suffocation and entrapment hazards. • The sleep surface should be flat (not inclined). Inclined sleepers, car seats, swings, and bouncers are
+not safe for unsupervised sleep. • Do not use sleep positioners or nests (such as DockATot or Snuggle Me). These have not been
+shown to be safe and the FDA has warned against them. Room Sharing (Not Bed Sharing)
+• Room sharing is recommended for at least the first 6 months, ideally the first year. Place the crib or
+bassinet in the parents' bedroom, within arm's reach. • Bed sharing is NOT recommended. Sharing a bed with an infant increases the risk of SIDS,
+suffocation, and entrapment. This includes sharing with parents, siblings, or pets. • The risk of bed sharing is especially high if: a parent smokes, has consumed alcohol or sedating
+medications, the baby is younger than 4 months, the baby was born preterm or with low birth weight, or
+the sleep surface is soft (couch, armchair, waterbed). Additional SIDS Risk Reduction
+• Offer a pacifier at sleep time: Pacifier use during sleep has been associated with reduced SIDS risk. If breastfeeding, wait until breastfeeding is well established (usually 3–4 weeks) before introducing a
+pacifier. If it falls out during sleep, do not replace it. • Avoid overheating: Dress the baby in no more than one additional layer than what an adult would
+wear. Watch for signs of overheating: sweating, damp hair, flushed cheeks, heat rash, rapid breathing.","It is recommended that your baby sleep in your bedroom for at least the first 6 months, ideally for the first year. However, bed sharing is not recommended, as it increases the risk of Sudden Infant Death Syndrome (SIDS), suffocation, and entrapment. Instead, place the crib or bassinet in your bedroom within arm's reach [S1].",,
+H23,Q35,My son has asthma. Is there anything I should know before giving him ibuprofen?,yes,Ibuprofen should be used with caution in children with asthma because NSAIDs can trigger bronchospasm in some children.,"[pediatric-medications-reference.pdf#3]
+2. Ibuprofen (Motrin / Advil)
+What It Is
+Ibuprofen is a nonsteroidal anti-inflammatory drug (NSAID) available over the counter. It reduces fever, relieves
+pain, and reduces inflammation. Brand names include Motrin, Advil, and many generic brands. Unlike
+acetaminophen, ibuprofen also has anti-inflammatory properties, making it particularly effective for pain
+involving swelling or inflammation. What It Treats
+• Fever reduction
+• Mild to moderate pain: headaches, toothaches, earaches, sore throat
+• Muscle aches and body pain
+• Inflammation: sprains, strains, minor injuries
+• Menstrual cramps (older children and adolescents)
+• Pain from ear infections, dental procedures, or minor surgery
+Available Forms for Children
+• Liquid oral suspension: 100 mg per 5 mL (infants' concentrated drops and children's suspension)
+• Chewable tablets: 100 mg per tablet
+• Junior strength tablets or capsules: 100 mg
+• Adult tablets: 200 mg (for older children per doctor's guidance)
+Age Restrictions and General Dosing Principles
+Do NOT give ibuprofen to infants younger than 6 months of age. I
+• Dosing is based on the child's WEIGHT, not age
+• Given every 6 to 8 hours as needed
+• Do not exceed 3 to 4 doses in 24 hours
+• Give with food or milk to reduce stomach irritation
+• Use the measuring device that came with the product
+• For children under 2 years, consult a pediatrician for the correct dose
+Important Safety Information
+Do NOT give ibuprofen during chickenpox. It may increase the risk of severe skin infections (necrotizing
+I
+fasciitis). • Do not give on an empty stomach. Take with food, milk, or a snack to prevent stomach irritation
+• Do not give to a child who is dehydrated or vomiting frequently, as it can affect kidney function
+• Do not use if the child has a known allergy to ibuprofen, aspirin, or other NSAIDs
+• Use with caution in children with asthma, as NSAIDs can trigger bronchospasm in some children
+• Do not give aspirin or other NSAIDs at the same time as ibuprofen","Yes, you should be cautious when giving ibuprofen to a child with asthma, as NSAIDs can trigger bronchospasm in some children. It's important to consult your pediatrician for specific guidance regarding its use in your son's case [S3].",,
+H24,Q27,My toddler just had a seizure while running a high fever. What should I do while it's happening?,yes,"Place the child on their side on a safe surface, don't put anything in their mouth, don't restrain them, time the seizure, and call 911 if it lasts more than 5 minutes.","[pediatric-medical-reference.pdf#2]
+• Acetaminophen (Tylenol) can be given every 4 to 6 hours as needed. Follow package directions based on
+child's weight
+• Ibuprofen (Advil, Motrin) can be given every 6 to 8 hours. Do not give ibuprofen to children younger than 6
+months
+• Never give aspirin to children or teenagers. Aspirin can cause Reye's syndrome, a rare but serious
+condition
+• Do not alternate between acetaminophen and ibuprofen unless directed by a healthcare provider, as this
+can lead to dosing errors
+Febrile Seizures
+Some children experience seizures triggered by fever, called febrile seizures. These occur in about 2 to 5
+percent of children between ages 6 months and 5 years. During a febrile seizure the child may shake, twitch,
+stiffen, or become unresponsive for a short time, usually less than 5 minutes. While frightening, most febrile
+seizures are harmless and do not cause lasting damage or epilepsy. If a seizure occurs: place the child on their
+side on a safe surface, do not put anything in their mouth, do not restrain them, time the seizure, and call 911 if
+it lasts more than 5 minutes. When to Call the Doctor
+Any infant under 3 months with a rectal temperature of 100.4 F (38 C) or higher needs immediate medical
+I
+evaluation, even if no other symptoms are present
+• Child 3 to 12 months with a fever of 102.2 F (39 C) or higher
+• Child under 2 years with a fever lasting more than 48 hours
+• Fever over 104 F (40 C) at any age
+• Fever that keeps coming back over a week or more
+• Child appears very ill, is unusually sleepy, or is very fussy
+• Signs of dehydration: no wet diapers for 8 hours, no tears when crying, dry mouth, sunken eyes
+• New rash accompanying the fever
+• Stiff neck, severe headache, difficulty breathing, blue lips
+• Child has a chronic medical condition or weakened immune system
+Prevention
+Frequent handwashing is the most effective way to prevent infections that cause fever. Keep children up to date
+on immunizations. Teach children to cover coughs and sneezes. Avoid sharing cups and utensils. Keep
+children home when they are sick to prevent spreading illness. Source: MedlinePlus/NIH, CDC Fever Guidelines, AAP HealthyChildren.org","Call 911 right now. During a seizure, place your child on their side on a flat surface, do not put anything in their mouth, do not try to restrain them, and time the seizure. If the seizure lasts more than 5 minutes, call 911 again. After the seizure, monitor your child and seek medical attention as needed.",,
+H25,Q80,My baby has a bulge at his belly button when he cries. Is an umbilical hernia dangerous?,no,,Out of scope: none of the 12 source documents cover this topic.,"An umbilical hernia is generally not dangerous and is common in infants. It often appears as a bulge at the belly button, especially when the baby cries or strains. Most umbilical hernias close on their own by the time the child is 1 to 2 years old. However, if you notice any redness, swelling, discharge, or foul smell around the umbilical cord, or if the bulge becomes painful or does not go away, you should call your pediatrician [S1].",,

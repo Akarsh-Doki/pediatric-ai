@@ -10,33 +10,40 @@ class TestShouldRefuse:
         assert should_refuse(mock_chunks_empty) is True
 
     def test_refuses_when_best_chunk_below_floor(self):
-        """Best match is below 0.45 = essentially random noise."""
+        """Best match is below the cutoff = essentially random noise."""
         garbage_chunks = [
             {"similarity": 0.30, "chunk_text": "irrelevant"},
             {"similarity": 0.25, "chunk_text": "also irrelevant"},
         ]
-        assert should_refuse(garbage_chunks) is True
+        assert should_refuse(garbage_chunks, threshold=0.45) is True
 
     def test_does_not_refuse_above_floor(self):
-        """Best match at 0.50 is above the 0.45 floor — should NOT refuse."""
+        """Best match at 0.50 is above a 0.45 cutoff — should NOT refuse."""
         ok_chunks = [
             {"similarity": 0.50, "chunk_text": "somewhat relevant"},
         ]
-        assert should_refuse(ok_chunks) is False
+        assert should_refuse(ok_chunks, threshold=0.45) is False
 
     def test_does_not_refuse_high_similarity(self, mock_chunks_high):
         """High similarity chunks should never trigger refusal."""
         assert should_refuse(mock_chunks_high) is False
 
-    def test_boundary_at_045(self):
-        """Exactly 0.45 should NOT refuse (>= not >)."""
+    def test_boundary_at_cutoff(self):
+        """Exactly the cutoff should NOT refuse (>= not >)."""
         boundary_chunks = [{"similarity": 0.45, "chunk_text": "boundary"}]
-        assert should_refuse(boundary_chunks) is False
+        assert should_refuse(boundary_chunks, threshold=0.45) is False
 
-    def test_boundary_just_below_045(self):
-        """0.449 should refuse."""
+    def test_boundary_just_below_cutoff(self):
+        """Just below the cutoff should refuse."""
         below_chunks = [{"similarity": 0.449, "chunk_text": "just below"}]
-        assert should_refuse(below_chunks) is True
+        assert should_refuse(below_chunks, threshold=0.45) is True
+
+    def test_default_cutoff_is_the_retrieval_setting(self):
+        """With no threshold given, uses settings.similarity_threshold (same as retrieval)."""
+        from backend.config import get_settings
+        cutoff = get_settings().similarity_threshold
+        assert should_refuse([{"similarity": cutoff, "chunk_text": "x"}]) is False
+        assert should_refuse([{"similarity": cutoff - 0.001, "chunk_text": "x"}]) is True
 
 
 class TestComputeConfidence:

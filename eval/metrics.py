@@ -1,18 +1,3 @@
-"""
-RAG evaluation metrics  (TIER 3, feature #7).
-
-Pure, dependency-free functions for measuring retrieval quality and answer grounding.
-Nothing here touches the network, the DB, or the LLM, so every metric is unit-tested
-deterministically. run_eval.py wires these to the live retriever to produce a real
-before/after table; this module just defines the math.
-
-Conventions
------------
-* "ids" are any hashable identifiers for retrieved/relevant items. In this project we
-  evaluate at the *document-source* level (a question's gold answer lives in one or more
-  source PDFs), but the functions are id-agnostic and work equally on chunk ids.
-* Retrieved lists are RANK-ORDERED (best first). Order matters for MRR and @k cutoffs.
-"""
 from __future__ import annotations
 
 import re

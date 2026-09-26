@@ -40,6 +40,13 @@ ollama_data/
 
 # Eval reports (regenerated)
 eval/report.md
+# run_eval.py resume caches (duplicate the results CSVs; only needed for --resume)
+eval/**/*cache.jsonl
+# retrieval_eval.py output
+eval/last_retrieval_results.json
+eval/last_run_results.json
+# blank hand-check sheets for intermediate runs (only final_hand_check.csv gets graded)
+eval/runs/run*_hand_check.csv
 
 .env
 .env.production.bak
