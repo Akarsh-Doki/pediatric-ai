@@ -3,12 +3,12 @@
 **An AI-powered pediatric health assistant with RAG-grounded medical responses, animated doctor interface, and voice synthesis.**
  
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://python.org)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://reactjs.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://reactjs.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16_+_pgvector-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai&logoColor=white)](https://openai.com)
 [![AWS](https://img.shields.io/badge/AWS-ECS_|_RDS_|_CloudFront-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com)
-[![Tests](https://img.shields.io/badge/Tests-59_passing-brightgreen?logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-173_passing-brightgreen?logo=pytest&logoColor=white)](tests/)
  
 ---
 
@@ -53,7 +53,7 @@ ECS Fargate — runs FastAPI in Docker (serverless)
   ↓  5. Send chunks + question to GPT-4o-mini
   ↓  6. Stream response tokens back via SSE
   ↓
-RDS PostgreSQL — stores 274 medical chunks with pgvector
+RDS PostgreSQL — stores 278 medical chunks with pgvector
   ↓
 OpenAI GPT-4o-mini — generates the medical response
   ↓
@@ -69,7 +69,7 @@ flowchart TD
   AMB -->|yes| CLARIFY(["Ask a targeted follow up question, then stop"])
   AMB -->|no| EMBED["Embed the question into a 384 dimensional vector"]
   EMBED --> RETR["Hybrid search: top 20 vector matches, reranked with keyword (TF-IDF) score"]
-  RETR -. reads .-> DB[("RDS PostgreSQL + pgvector: 274 chunks")]
+  RETR -. reads .-> DB[("RDS PostgreSQL + pgvector: 278 chunks")]
   RETR --> CONF{"Any chunk with similarity 0.40 or higher?"}
   CONF -->|no| REFUSE["Fixed reply: no verified source, ask your pediatrician (no LLM call)"]
   CONF -->|yes| GROUND["Answer only from the retrieved chunks, citing each claim"]
@@ -79,13 +79,12 @@ flowchart TD
   STREAM --> DOC(["Doctor animates and reads the answer aloud"])
 ```
 
-### Infrastructure path
 ---
 
 ## Features
  
 ### RAG Pipeline (Retrieval-Augmented Generation)
-- **12 medical PDFs** ingested into 274 chunks with 100-token overlap
+- **12 medical PDFs** ingested into 278 chunks with 100-token overlap
 - **Sentence embeddings** using all-MiniLM-L6-v2 (384 dimensions)
 - **pgvector cosine similarity** search with configurable thresholds
 - **Source-only answers**: the model answers only from retrieved chunks, cites them as [S1], [S2]…, and says when its sources don't cover a question. No chunk at 0.40+ similarity → a fixed "no verified source" reply without calling the LLM. Tuned with the eval in `eval/` (see `eval/IMPROVEMENT_LOG.md`)
@@ -96,17 +95,21 @@ flowchart TD
 - **Rate limiting** — 15 queries/hour per IP (slowapi) to protect the OpenAI budget
 - **Input validation** — 5,000 character limit with live counter
 - **Error boundary** — React error boundary prevents white-screen crashes
+### Medication Safety (deterministic, in code, not the LLM)
+- **Dose calculator** — weight-based acetaminophen/ibuprofen doses computed from a published dosing table, with age floors, hard single-dose and daily caps, and aspirin always refused. Dose questions in chat ("how much Tylenol for a 30 lb 2-year-old?") are routed here instead of to the LLM
+- **Medication safety check** — every medication mentioned is cross-checked against the patient's allergies, current medications, age, and conditions (combo-product duplicates, known interactions, pediatric contraindications)
+- **Dose log** — logged doses block a too-early re-dose or a 24-hour cap breach and show when the next dose is safe
 ### Animated Doctor Interface
 - **11 expression PNGs** — idle (with blink variants), thinking, talking (4 mouth positions), concerned, reassuring
 - **Context-aware expressions** — thinking while waiting, talking during streaming, concerned for urgent symptoms
-- **Browser speech synthesis** — male voice reads responses aloud at 1.35x speed
+- **Browser speech synthesis** — male voice reads responses aloud at 1.25x speed
 - **Stop/replay controls** — pause the doctor mid-sentence, replay the last response
 ### Production Infrastructure
 - **AWS ECS Fargate** — serverless container running the FastAPI backend
 - **RDS PostgreSQL 16** with pgvector extension
 - **CloudFront + S3** — frontend served globally over HTTPS
 - **Secrets Manager** — API keys encrypted at rest, injected at runtime
-- **CI/CD** — GitHub Actions runs 59 tests → deploys to ECR + S3 on every push
+- **CI/CD** — GitHub Actions runs 173 tests → deploys to ECR + S3 on every push
 - **Start/stop scripts** — `start.sh` brings everything up in 5 minutes, `stop.sh` shuts it down in 30 seconds
 
 ---
@@ -115,7 +118,7 @@ flowchart TD
  
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| **Frontend** | React 18, Vite, Tailwind CSS | Fast builds, utility-first styling, modern React hooks |
+| **Frontend** | React 19, Vite, Tailwind CSS | Fast builds, utility-first styling, modern React hooks |
 | **Backend** | FastAPI, Python 3.11 | Async support for streaming, automatic OpenAPI docs |
 | **Database** | PostgreSQL 16 + pgvector | Vector similarity search natively in SQL |
 | **Embeddings** | all-MiniLM-L6-v2 (384d) | Fast, accurate sentence embeddings without GPU |
@@ -124,7 +127,7 @@ flowchart TD
 | **TTS** | Browser SpeechSynthesis API | Free, instant, no API calls needed |
 | **Infrastructure** | AWS ECS, ALB, RDS, S3, CloudFront | Production-grade, scalable, cost-controlled |
 | **CI/CD** | GitHub Actions | Auto-deploy on push, test gating |
-| **Testing** | pytest (59 tests) | Unit tests for evaluation, clarification, symptoms, generation |
+| **Testing** | pytest (173 tests) | Unit tests for medication safety, dosing, retrieval, eval scoring, and the chat pipeline |
  
 ---
 
@@ -151,18 +154,25 @@ When a parent asks a question, here's what happens in ~3 seconds:
 
 ## Test Results
  
-59 tests across 4 modules, all passing:
+173 tests across 11 modules, all passing. No DB, network, or LLM needed:
  
 | Module | Tests | What it covers |
 |--------|-------|---------------|
+| `test_dosing.py` | 32 | Supported drugs only, aspirin refused, weight required, age floors, dose math, hard caps, condition flags |
+| `test_run_eval.py` | 23 | Eval verdict rules, recall@5, Wilson intervals and kappa, evidence pool, cost accounting, question set |
+| `test_clarification.py` | 19 | Specific queries pass through, vague queries caught, greetings handled, contextual follow-ups |
+| `test_eval_metrics.py` | 16 | Precision/recall@k, MRR, grounding, calibration |
 | `test_evaluation.py` | 15 | Refusal cutoff (uses the retrieval setting), confidence formula, boundary cases |
-| `test_clarification.py` | 16 | Specific queries pass through, vague queries caught, greetings handled |
-| `test_symptoms.py` | 13 | Keyword extraction accuracy, severity classification |
+| `test_dose_intent.py` | 14 | Detecting dose questions in chat, parsing weight/age, formatting dose and refusal answers |
+| `test_symptoms.py` | 14 | Keyword extraction accuracy, severity classification |
 | `test_generation.py` | 12 | Prompt assembly, patient info inclusion, history limits, urgency detection |
+| `test_hybrid_retrieval.py` | 11 | Score normalization, vector/keyword fusion, TF-IDF, reranking |
+| `test_medication_safety.py` | 11 | Allergy conflicts, hidden duplicate ingredients, interactions, pediatric contraindications |
+| `test_dose_log.py` | 6 | Too-early re-dose and daily-cap guards, next-safe-dose countdown |
  
 ```bash
 python -m pytest tests/ -v
-# ========================= 59 passed =========================
+# ========================= 173 passed =========================
 ```
  
 ---
@@ -224,7 +234,7 @@ The project is deployed on production AWS infrastructure:
 |---------|---------|
 | **ECS Fargate** | Runs the backend Docker container (0.5 vCPU, 1GB RAM) |
 | **ALB** | Routes traffic, health checks, stable endpoint |
-| **RDS** | PostgreSQL 16 with pgvector, stores 274 medical chunks |
+| **RDS** | PostgreSQL 16 with pgvector, stores 278 medical chunks |
 | **S3 + CloudFront** | Serves React frontend globally over HTTPS |
 | **Secrets Manager** | Encrypted storage for API keys |
 | **ECR** | Docker image repository |
@@ -236,7 +246,6 @@ Start/stop scripts control costs:
 ```bash
 ./aws-scripts/start.sh      # Start everything (~5 min, ~$1/day while on)
 ./aws-scripts/stop.sh        # Stop everything (~30 sec, ~$0.50/month while off)
-./aws-scripts/hibernate.sh   # Deep stop ($0.00/month)
 ./aws-scripts/status.sh      # Check what's running
 ```
  
@@ -250,26 +259,38 @@ pediatric-ai/
 │   ├── config.py                  # Settings (reads .env)
 │   ├── main.py                    # FastAPI app, CORS, rate limiting
 │   ├── models/
-│   │   ├── database.py            # 7 SQLAlchemy tables
+│   │   ├── database.py            # 8 SQLAlchemy tables
 │   │   └── schemas.py             # Pydantic request/response models
 │   ├── routers/
 │   │   ├── chat.py                # /chat/query + /chat/stream (SSE)
 │   │   ├── patients.py            # CRUD for patient records
 │   │   ├── documents.py           # PDF upload + live ingestion
+│   │   ├── medication.py          # Dose calculator, safety check, dose log
+│   │   ├── analytics.py           # Usage dashboard
 │   │   └── tts.py                 # Text-to-speech endpoint
 │   ├── services/
 │   │   ├── generation.py          # LLM prompt building + streaming + word fixer
 │   │   ├── retrieval.py           # pgvector cosine similarity search
+│   │   ├── hybrid_retrieval.py    # TF-IDF + vector score fusion (rerank)
 │   │   ├── evaluation.py          # Confidence scoring + refusal logic
 │   │   ├── clarification.py       # Ambiguity detection
+│   │   ├── medication_safety.py   # Allergy / interaction / contraindication checks
+│   │   ├── dosing.py              # Weight-based OTC dose calculator
+│   │   ├── dose_intent.py         # Routes chat dose questions to the calculator
+│   │   ├── dose_log.py            # Double-dose and daily-cap guard
 │   │   ├── ingestion.py           # PDF → chunks → embeddings
 │   │   └── tts_service.py         # Google TTS (backend fallback)
 │   ├── utils/
 │   │   ├── symptoms.py            # Keyword-based symptom extraction
 │   │   ├── embeddings.py          # SentenceTransformer wrapper
 │   │   └── chunking.py            # 600-token chunks, 100 overlap
-│   └── scripts/
-│       └── ingest_corpus.py       # Bulk PDF ingestion
+│   ├── scripts/
+│   │   ├── ingest_corpus.py       # Bulk PDF ingestion
+│   │   └── compare_embeddings.py  # Embedding model comparison
+│   └── data/
+│       ├── guidelines/            # 12 medical PDFs (tier1/, tier2/)
+│       └── medication/            # Dosing table + drug data
+├── eval/                          # RAG eval: questions, judge, metrics, runs (see eval/README.md)
 ├── frontend/
 │   └── src/
 │       ├── App.jsx                # Main app with doctor animation
@@ -282,14 +303,13 @@ pediatric-ai/
 │           ├── DoctorFace.jsx     # 11-PNG expression animation
 │           ├── ErrorBoundary.jsx  # Crash recovery
 │           ├── CitationPanel.jsx  # Source references
+│           ├── ConversationList.jsx # Past conversations per patient
+│           ├── DocumentUpload.jsx # PDF upload
+│           ├── PatientForm.jsx    # New patient form
+│           ├── PromptChips.jsx    # Suggested starter questions
 │           └── Sidebar.jsx        # Patient selection, settings
-├── tests/
-│   ├── test_evaluation.py         # 15 tests: cutoff, confidence
-│   ├── test_clarification.py      # 16 tests: ambiguity detection
-│   ├── test_symptoms.py           # 13 tests: keyword extraction
-│   └── test_generation.py         # 12 tests: prompt assembly
-├── aws-scripts/                   # Start/stop/hibernate/teardown
-├── data/pdfs/                     # 12 medical PDFs (corpus)
+├── tests/                         # 173 tests across 11 modules (see Test Results)
+├── aws-scripts/                   # Start/stop/status/teardown
 ├── .github/workflows/deploy.yml   # CI/CD pipeline
 ├── docker-compose.yml             # Local full-stack
 └── .env.example                   # Environment template
